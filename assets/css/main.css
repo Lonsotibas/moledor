@@ -1,0 +1,23 @@
+@import "./base.css";
+
+#app {
+  height: 100vh;
+  position: relative;
+  margin: 0;
+  padding: 0;
+  background-color: var(--black);
+}
+
+.view {
+  height: 90vh;
+}
+
+/* Footer */
+footer {
+  width: 100%;
+  height: 10vh;
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  background-color: var(--black);
+}
