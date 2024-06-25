@@ -9,22 +9,8 @@
   --black-mute: #333531;
 
   /* Colores Principales */
-  --arylide-yellow: rgba(232, 207, 86, 1);
-  --thistle: rgba(233, 207, 252, 1);
-  --non-photo-blue: rgba(187, 236, 253, 1);
-  --lavender-pink: rgba(252, 173, 204, 1);
 
-  /* Colores especificos por tema */
-  /* Tema Claro */
-  --title-light: var(--lavender-pink);
-  --subtitle-light: var(--lavender-pink);
-  --link-light: var(--arylide-yellow);
-  --link-hover-light: var(--thistle);
-  /* Tema Oscuro */
-  --title-dark: var(--lavender-pink);
-  --subtitle-dark: var(--lavender-pink);
-  --link-dark: var(--thistle);
-  --link-hover-dark: var(--non-photo-blue);
+  /* Colores especificos */
 
   /* Extras */
   --divider-light-1: rgba(60, 60, 60, 0.29);

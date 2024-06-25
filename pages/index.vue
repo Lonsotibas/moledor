@@ -45,8 +45,9 @@ let userSelected = ref({});
 
 .card span {
   color: var(--color-text);
+  font-size: 0.9em;
   position: absolute;
   bottom: 5px;
-  left: 0;
+  left: 5px;
 }
 </style>

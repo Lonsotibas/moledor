@@ -9,7 +9,10 @@ const emit = defineEmits(["closed"]);
     <!-- Modal: Header -->
     <div class="modal-header">
       <Icon size="30px" name="ri:heart-add-2-line" />
-      <span id="user-status">Conectado</span>
+      <div id="user-status">
+        <Icon color="green" name="ri:checkbox-blank-circle-fill" />
+        <span>Conectado</span>
+      </div>
       <div class="opt-btns">
         <Icon size="30px" name="ri:prohibited-2-line" />
         <Icon size="30px" name="ri:close-circle-line" @click="emit('closed')" />
@@ -24,6 +27,7 @@ const emit = defineEmits(["closed"]);
         <div>
           <span id="user-name">{{ props.user.nombre }}</span>
           <span id="user-pronoun">{{ props.user.pronombre }}</span>
+          <span id="user-age">{{ props.user.edad }}</span>
         </div>
         <div>
           <span id="user-distance">0m de distancia</span>
@@ -36,8 +40,16 @@ Lorem ipsum dolor sit amet consectetur adipisicing elit. Tempore aut minima in u
         </div>
         <!-- Usuario: Informacion Especifica -->
         <div>
-          <span>{{ props.user.medidas.estatura }}m</span>
-          <span>{{ props.user.medidas.peso }}kg</span>
+          <span v-if="props.user.medidas.estatura">
+            <Icon name="ri:ruler-line" />
+            {{ props.user.medidas.estatura }}m
+          </span>
+          <span v-if="props.user.medidas.peso">
+            |
+            <Icon name="ri:weight-line" />
+            {{ props.user.medidas.peso }}kg
+          </span>
+          <span v-if="false"> | </span>
         </div>
       </div>
     </div>
@@ -66,10 +78,18 @@ Lorem ipsum dolor sit amet consectetur adipisicing elit. Tempore aut minima in u
   top: 0;
   left: 0;
 }
+#user-status {
+  display: flex;
+  align-items: center;
+}
+#user-status > svg {
+  margin-right: 3px;
+}
 .modal-body {
   margin-top: 5vh;
 }
-/* Modal: Estilo Informacion de Usuario */
+
+/* Modal: Informacion de Usuario */
 /* Usuario: Foto */
 .user-img {
   position: sticky;
@@ -78,6 +98,7 @@ Lorem ipsum dolor sit amet consectetur adipisicing elit. Tempore aut minima in u
 }
 /* Usuario: Informacion General */
 .user-props {
+  background-color: var(--black);
   color: var(--white);
   font-size: 0.9em;
   padding: 0 10px;
@@ -91,6 +112,12 @@ Lorem ipsum dolor sit amet consectetur adipisicing elit. Tempore aut minima in u
   margin-left: 4px;
   font-style: italic;
 }
+#user-age {
+  color: gray;
+  margin-left: 8px;
+  font-size: 1.7em;
+  font-weight: 100;
+}
 #user-about {
   margin-top: 15px;
 }
@@ -98,7 +125,7 @@ Lorem ipsum dolor sit amet consectetur adipisicing elit. Tempore aut minima in u
   display: block;
 }
 #about-text {
-  font-size: 0.8em;
+  font-size: 0.9em;
   color: var(--white);
   background-color: var(--black-soft);
   width: 100%;
