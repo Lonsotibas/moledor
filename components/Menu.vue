@@ -9,7 +9,7 @@ let itemPressed = ref("index");
       <ul id="nav-list">
         <!-- Index -->
         <li class="nav-item">
-          <NuxtLink @click="itemPressed = 'index'">
+          <NuxtLink to="/main" @click="itemPressed = 'index'">
             <Icon
               :name="itemPressed == 'index' ? 'bi:eye-fill' : 'bi:eye'"
               size="2.5em"
@@ -18,7 +18,7 @@ let itemPressed = ref("index");
         </li>
         <!-- Chat -->
         <li class="nav-item">
-          <NuxtLink @click="itemPressed = 'chat'">
+          <NuxtLink to="/chats" @click="itemPressed = 'chat'">
             <Icon
               :name="
                 itemPressed == 'chat'
@@ -64,5 +64,8 @@ let itemPressed = ref("index");
 }
 .nav-item {
   display: inline-grid;
+}
+.nav-item > a {
+  color: white;
 }
 </style>

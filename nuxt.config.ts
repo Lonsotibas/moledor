@@ -2,7 +2,7 @@
 export default defineNuxtConfig({
   devtools: { enabled: false },
   css: ['~/assets/css/main.css'],
-  modules: ['nuxt-icon', "nuxt-mongoose"],
+  modules: ['nuxt-icon', "nuxt-server-utils"],
   icon: {
     customCollections: [
       {

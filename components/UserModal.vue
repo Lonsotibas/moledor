@@ -9,10 +9,12 @@ const emit = defineEmits(["closed"]);
     <!-- Modal: Header -->
     <div class="modal-header">
       <Icon size="30px" name="ri:heart-add-2-line" />
+      <!-- Status -->
       <div id="user-status">
         <Icon color="green" name="ri:checkbox-blank-circle-fill" />
         <span>Conectado</span>
       </div>
+      <!-- Modal: Opciones -->
       <div class="opt-btns">
         <Icon size="30px" name="ri:prohibited-2-line" />
         <Icon size="30px" name="ri:close-circle-line" @click="emit('closed')" />
@@ -24,33 +26,73 @@ const emit = defineEmits(["closed"]);
       <div class="user-img"></div>
       <div class="user-props">
         <!-- Usuario: Informacion General -->
-        <div>
+        <div id="user-general-info">
+          <!-- Nombre -->
           <span id="user-name">{{ props.user.nombre }}</span>
+          <!-- Pronombre -->
           <span id="user-pronoun">{{ props.user.pronombre }}</span>
+          <!-- Edad -->
           <span id="user-age">{{ props.user.edad }}</span>
         </div>
-        <div>
-          <span id="user-distance">0m de distancia</span>
+        <!-- Distancia -->
+        <div id="user-distance">
+          <span>0m de distancia</span>
         </div>
+        <!-- Acerca de mi -->
         <div id="user-about">
-          <span id="about-title">Acerca de mi</span>
-          <textarea id="about-text">
+          <span class="modal-subtitle">Acerca de mi</span>
+          <textarea class="about-text">
 Lorem ipsum dolor sit amet consectetur adipisicing elit. Tempore aut minima in unde temporibus necessitatibus impedit provident aperiam voluptatem dolorum. Nihil magnam autem commodi inventore illo dolor ad suscipit ipsam.</textarea
           >
         </div>
         <!-- Usuario: Informacion Especifica -->
+        <span class="modal-subtitle">Descripcion</span>
+        <!-- Genero -->
+        <div id="user-gender">
+          <Icon size="14px" name="material-symbols-light:transgender" />
+          <span>
+            {{ props.user.genero }}
+          </span>
+        </div>
+        <!-- Medidas -->
         <div>
-          <span v-if="props.user.medidas.estatura">
-            <Icon name="ri:ruler-line" />
+          <!-- Estatura -->
+          <span id="user-height" v-if="props.user.medidas.estatura">
+            <Icon size="14px" name="ri:ruler-line" />
             {{ props.user.medidas.estatura }}m
           </span>
-          <span v-if="props.user.medidas.peso">
+          <!-- Peso -->
+          <span id="user-weight" v-if="props.user.medidas.peso">
             |
-            <Icon name="ri:weight-line" />
+            <Icon size="14px" name="ri:weight-line" />
             {{ props.user.medidas.peso }}kg
           </span>
-          <span v-if="false"> | </span>
         </div>
+        <!-- Rol -->
+        <div>
+          <Icon size="14px" name="material-symbols-light:circles-ext-outline" />
+          <span>
+            {{ props.user.rol }}
+          </span>
+        </div>
+        <!-- Etnia -->
+        <div>
+          <span>
+            {{ props.user.etnia }}
+          </span>
+        </div>
+        <!-- Estado Civil -->
+        <div>
+          <Icon size="14px" name="clarity:users-line" />
+          <span>
+            {{ props.user.estadoCivil }}
+          </span>
+        </div>
+        <!-- Intereses -->
+        <span class="modal-subtitle">Intereses</span>
+        <div></div>
+        <!-- Salud -->
+        <span class="modal-subtitle">Salud</span>
       </div>
     </div>
   </div>
@@ -63,7 +105,7 @@ Lorem ipsum dolor sit amet consectetur adipisicing elit. Tempore aut minima in u
   z-index: 1;
   height: 100%;
   width: 100%;
-  background-color: black;
+  background-color: var(--black);
 }
 .modal-header {
   background-color: var(--black);
@@ -87,6 +129,11 @@ Lorem ipsum dolor sit amet consectetur adipisicing elit. Tempore aut minima in u
 }
 .modal-body {
   margin-top: 5vh;
+}
+.modal-subtitle {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--white-soft);
 }
 
 /* Modal: Informacion de Usuario */

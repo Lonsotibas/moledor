@@ -1,53 +1,57 @@
-<script setup lang="ts">
-let users = createUsers();
-let isVisible = ref(false);
-let userSelected = ref({});
-</script>
-
 <template>
   <main class="view">
-    <div class="gallery">
-      <div
-        class="card"
-        v-for="user in users"
-        @click="
-          isVisible = !isVisible;
-          userSelected = user;
-        "
-      >
-        <span>{{ user.nombre }}</span>
-        <Icon size="80px" name="solar:user-circle-bold" />
-      </div>
-      <UserModal
-        v-if="isVisible"
-        :user="userSelected"
-        @closed="isVisible = !isVisible"
-      />
-    </div>
+    <form class="form">
+      <fieldset class="field">
+        <label for="uname">Nombre de Usuario</label>
+        <input type="text" id="uname" name="uname" />
+      </fieldset>
+      <fieldset class="field">
+        <label for="umail">Email</label>
+        <input type="text" id="umail" name="umail" />
+      </fieldset>
+      <button class="btn-login">Iniciar Sesion</button>
+    </form>
   </main>
 </template>
 
 <style scoped>
-.gallery {
+.view {
+  height: 100vh;
+}
+.form {
   height: 100%;
-  overflow-y: scroll;
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-}
-.card {
-  margin: 2px;
-  height: 14vh;
-  margin: 0;
-  position: relative;
   display: flex;
+  flex-direction: column;
   justify-content: center;
+  align-items: center;
 }
-
-.card span {
-  color: var(--color-text);
-  font-size: 0.9em;
-  position: absolute;
-  bottom: 5px;
-  left: 5px;
+.field {
+  text-align: center;
+  margin: 5px;
+  border: none;
+}
+.field label {
+  font-weight: 500;
+  font-size: 1.2em;
+  display: block;
+  margin-bottom: 6px;
+}
+.field input {
+  background-color: var(--black);
+  border: 1px solid var(--white-soft);
+  border-radius: 15px;
+  box-shadow: none;
+  height: 2.5em;
+  width: 300px;
+}
+.btn-login {
+  background-color: var(--white-soft);
+  box-shadow: none;
+  color: var(--black-mute);
+  font-weight: 600;
+  border-style: hidden;
+  border-radius: 30px;
+  height: 2.5em;
+  width: 150px;
 }
 </style>
