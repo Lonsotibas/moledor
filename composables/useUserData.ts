@@ -1,15 +1,14 @@
-
 const useUserData = () => {
-    const currentUser = useState('user', () => {})
+  const currentUser = useCookie("user");
 
-    const setUserData = (user) => {
-        currentUser.value = user
-    }
+  const setUserData = (user) => {
+    currentUser.value = currentUser.value || user;
+  };
 
-    return {
-        currentUser,
-        setUserData
-    }
-}
+  return {
+    currentUser,
+    setUserData,
+  };
+};
 
-export default useUserData
+export default useUserData;

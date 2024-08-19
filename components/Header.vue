@@ -1,6 +1,15 @@
+<script setup lang="ts">
+const logout = () => {
+  const user = useCookie("user");
+  user.value = null;
+
+  navigateTo("/");
+};
+</script>
+
 <template>
   <nav class="navbar">
-    <Icon size="30px" name="solar:user-circle-bold" />
+    <Icon @click="logout" size="30px" name="solar:logout-2-outline" />
     <Icon size="30px" name="solar:fire-minimalistic-bold" />
   </nav>
 </template>
