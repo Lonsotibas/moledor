@@ -5,12 +5,22 @@
   position: relative;
   margin: 0;
   padding: 0;
-  background-color: var(--black);
+  background-color: var(--black-soft);
 }
 
 .view {
   height: 90vh;
   overflow-y: scroll;
+}
+
+a,
+a:hover,
+a:active,
+a:focus {
+  text-decoration: none;
+  color: white;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Footer */

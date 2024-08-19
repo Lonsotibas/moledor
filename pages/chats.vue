@@ -1,16 +1,20 @@
 <script setup lang="ts">
-let items = [...Array(10).keys()];
-let lastItem = items.slice(-1)[0];
+const users = await $fetch("/api/users");
 </script>
 
 <template>
   <main class="view">
     <ul class="chat-list">
-      <li v-for="item in items" class="chat-preview">
-        <Icon class="user-photo" size="80px" name="solar:user-circle-bold" />
-        <div class="user-name">Nombre de Usuario</div>
-        <div class="last-message">Ultimo mensaje enviado...</div>
-        <div v-if="item < lastItem" class="divider"></div>
+      <li v-for="(user, index) in users">
+        <NuxtLink
+          :to="{ name: 'chat-id', params: { id: user._id } }"
+          class="chat-preview"
+        >
+          <Icon class="user-photo" size="80px" name="solar:user-circle-bold" />
+          <div class="user-name">{{ user.nombre }}</div>
+          <div class="last-message">Ultimo mensaje enviado...</div>
+          <div v-if="index < users.length - 1" class="divider"></div>
+        </NuxtLink>
       </li>
     </ul>
   </main>
@@ -23,6 +27,7 @@ let lastItem = items.slice(-1)[0];
   padding: 0 5px;
 }
 .chat-preview {
+  width: 98vw;
   display: grid;
   grid-template-columns: 1fr 3fr;
   align-items: center;

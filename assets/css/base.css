@@ -8,15 +8,11 @@
   --black-soft: #1f201e;
   --black-mute: #333531;
 
-  /* Colores Principales */
+  --gray: #949396;
 
-  /* Colores especificos */
+  --yellow: #ffc533;
 
-  /* Extras */
-  --divider-light-1: rgba(60, 60, 60, 0.29);
-  --divider-light-2: rgba(60, 60, 60, 0.12);
-  --divider-dark-1: rgba(84, 84, 84, 0.65);
-  --divider-dark-2: rgba(84, 84, 84, 0.48);
+  --green: #daffef;
 
   --color-background: var(--black-mute);
   --color-text: var(--white);

@@ -1,6 +1,41 @@
-<script setup>
+<script setup lang="ts">
 const props = defineProps(["user", "isVisible"]);
 const emit = defineEmits(["closed"]);
+const { currentUser } = useUserData();
+const chatId = ref("");
+
+const chatExist = async () => {
+  const res = await $fetch(
+    `/api/chat/${props.user._id}/${currentUser.value._id}`
+  );
+  if (!res) {
+    startChat();
+    return;
+  }
+  chatId.value = res._id;
+  navigateTo(`/chat/${chatId.value}`);
+};
+
+const startChat = async () => {
+  // Crea Chat
+  const chat = await $fetch("/api/chat", {
+    method: "post",
+    body: {
+      currentUserId: currentUser.value._id,
+      otherUserId: props.user._id,
+    },
+  });
+  chatId.value = chat._id;
+  // Agrega chatId a usuarios
+  const user = await $fetch("/api/user/addChat", {
+    method: "patch",
+    body: {
+      usersId: [currentUser.value._id, props.user._id],
+      chatId: chatId.value,
+    },
+  });
+  navigateTo(`/chat/${chatId.value}`);
+};
 </script>
 
 <template>
@@ -8,7 +43,7 @@ const emit = defineEmits(["closed"]);
   <div class="modal">
     <!-- Modal: Header -->
     <div class="modal-header">
-      <Icon size="30px" name="ri:heart-add-2-line" />
+      <Icon size="30px" name="solar:fire-minimalistic-outline" />
       <!-- Status -->
       <div id="user-status">
         <Icon color="green" name="ri:checkbox-blank-circle-fill" />
@@ -23,7 +58,11 @@ const emit = defineEmits(["closed"]);
     <!-- Modal: Body -->
     <div class="modal-body">
       <!-- Usuario: Foto -->
-      <div class="user-img"></div>
+      <div class="user-img">
+        <NuxtLink @click="chatExist()">
+          <Icon class="chat-icon" size="40px" name="ph:chat" />
+        </NuxtLink>
+      </div>
       <div class="user-props">
         <!-- Usuario: Informacion General -->
         <div id="user-general-info">
@@ -59,13 +98,13 @@ Lorem ipsum dolor sit amet consectetur adipisicing elit. Tempore aut minima in u
           <!-- Estatura -->
           <span id="user-height" v-if="props.user.medidas.estatura">
             <Icon size="14px" name="ri:ruler-line" />
-            {{ props.user.medidas.estatura }}m
+            {{ props.user.medidas?.estatura }}m
           </span>
           <!-- Peso -->
           <span id="user-weight" v-if="props.user.medidas.peso">
             |
             <Icon size="14px" name="ri:weight-line" />
-            {{ props.user.medidas.peso }}kg
+            {{ props.user.medidas?.peso }}kg
           </span>
         </div>
         <!-- Rol -->
@@ -110,7 +149,7 @@ Lorem ipsum dolor sit amet consectetur adipisicing elit. Tempore aut minima in u
 .modal-header {
   background-color: var(--black);
   width: 100%;
-  height: 5vh;
+  height: 3em;
   padding: 0 10px;
   display: flex;
   align-items: center;
@@ -127,9 +166,6 @@ Lorem ipsum dolor sit amet consectetur adipisicing elit. Tempore aut minima in u
 #user-status > svg {
   margin-right: 3px;
 }
-.modal-body {
-  margin-top: 5vh;
-}
 .modal-subtitle {
   display: block;
   margin-bottom: 10px;
@@ -142,6 +178,11 @@ Lorem ipsum dolor sit amet consectetur adipisicing elit. Tempore aut minima in u
   position: sticky;
   background-color: var(--black-mute);
   height: 65vh;
+}
+.chat-icon {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
 }
 /* Usuario: Informacion General */
 .user-props {

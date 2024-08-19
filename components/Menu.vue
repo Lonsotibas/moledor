@@ -29,9 +29,9 @@ let itemPressed = ref("index");
             ></Icon>
           </NuxtLink>
         </li>
-        <!-- Virtual -->
+        <!-- XXO -->
         <li class="nav-item" virtual>
-          <NuxtLink @click="itemPressed = 'virtual'">
+          <NuxtLink to="/xxo" @click="itemPressed = 'virtual'">
             <Icon
               :name="
                 itemPressed == 'virtual'

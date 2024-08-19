@@ -1,11 +1,12 @@
 <script setup lang="ts">
-let users = createUsers();
+let users = await $fetch("/api/users");
 let isVisible = ref(false);
 let userSelected = ref({});
 </script>
 
 <template>
   <main class="view">
+    <Header v-if="!isVisible" />
     <div class="gallery">
       <div
         class="card"
@@ -28,6 +29,9 @@ let userSelected = ref({});
 </template>
 
 <style scoped>
+.view {
+  padding-top: 3em;
+}
 .gallery {
   height: 100%;
   overflow-y: scroll;
