@@ -12,6 +12,7 @@
   "dependencies": {
     "@ar-js-org/ar.js": "^3.4.5",
     "ar.js": "^2.0.8",
+    "mongodb": "^6.8.0",
     "mongoose": "^8.5.2",
     "nuxt": "^3.11.2",
     "nuxt-server-utils": "^0.0.7",

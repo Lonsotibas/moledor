@@ -9,8 +9,14 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
   io.bind(engine);
 
   io.on("connection", (socket) => {
+    console.log("Chat conectado");
     socket.on("message", async (value) => {
+      console.log("Envia mensaje");
       socket.emit("message", value);
+    });
+
+    socket.on("disconnect", () => {
+      console.log("Chat desconectado");
     });
   });
 

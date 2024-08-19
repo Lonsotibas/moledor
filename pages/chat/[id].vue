@@ -10,9 +10,6 @@ const otherUserId = chat.users.find((value) => {
 });
 const otherUser = await $fetch(`/api/user/${otherUserId.userId}`);
 
-console.log("Current User: ", currentUser.value._id);
-console.log("Other User: ", otherUser._id);
-
 const message = ref("");
 const state = reactive({ messages: [] });
 
@@ -53,6 +50,7 @@ onUnmounted(() => {
   <main class="view">
     <div class="chat-header">
       <Icon @click="$router.back()" size="20px" name="ion:caret-back" />
+      <span>{{ otherUser?.nombre }}</span>
       <div class="opts">
         <Icon size="30px" name="ri:prohibited-2-line" />
         <Icon size="30px" name="solar:fire-minimalistic-outline" />

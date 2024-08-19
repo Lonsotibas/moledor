@@ -15,7 +15,7 @@ export default defineNuxtConfig({
     mongodbUri: process.env.MONGODB_URI,
   },
   nitro: {
-    plugins: ["~/server/index.ts"],
+    plugins: ["~/server/index.ts", "~/server/plugins/socket.io.ts"],
     experimental: {
       websocket: true,
     },
