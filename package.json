@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@ar-js-org/ar.js": "^3.4.5",
-    "ar.js": "^2.0.8",
+    "aframe": "^1.6.0",
     "mongodb": "^6.8.0",
     "mongoose": "^8.5.2",
     "nuxt": "^3.11.2",
@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "@faker-js/faker": "^8.4.1",
+    "@types/aframe": "^1.2.7",
     "@types/three": "^0.167.1",
     "nuxt-icon": "^0.6.10",
     "socket.io": "^4.7.5"
