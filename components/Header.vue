@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const logout = () => {
-  const user = useCookie("user");
-  user.value = null;
+  const { setUserData } = useUserData();
+  setUserData(null);
 
   navigateTo("/");
 };

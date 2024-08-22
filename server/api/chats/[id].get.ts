@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
       $in: id,
     },
   };
-  const chat = Chat.findOne(filters).populate("users.userId").exec();
+  const chats = Chat.find(filters).populate("user").exec();
 
-  return chat;
+  return chats;
 });

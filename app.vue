@@ -1,7 +1,10 @@
 <script setup lang="ts">
 const { currentUser } = useUserData();
+const showMenu = ref(false);
+
 onBeforeMount(() => {
   if (!currentUser.value) {
+    showMenu.value = false;
     navigateTo("/");
   }
 });
@@ -9,7 +12,13 @@ onBeforeMount(() => {
 
 <template>
   <div id="app">
-    <NuxtPage />
-    <Menu v-if="currentUser != null" />
+    <NuxtPage
+      @showMenu="
+        (show: Boolean) => {
+          showMenu = show;
+        }
+      "
+    />
+    <Menu v-if="showMenu" />
   </div>
 </template>

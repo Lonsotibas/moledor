@@ -4,6 +4,7 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event);
   const update = {
     nombre: body.name,
+    pass: body.pass,
     genero: body.gender,
     pronombre: body.pronoun,
     medidas: {

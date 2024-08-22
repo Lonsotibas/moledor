@@ -1,7 +1,7 @@
 import { Schema, model } from "mongoose";
 
 const UserSchema = new Schema({
-  nombre: String || null,
+  nombre: { type: String || null, unique: true },
   pass: String,
   pronombre: String || null,
   medidas: {
@@ -22,7 +22,9 @@ const UserSchema = new Schema({
     prep: Boolean || null,
   },
   tags: Array<String> || null,
-  chats: [{ chatId: String, lastMsg: String }],
+  chats: [
+    { chatId: { type: Schema.Types.ObjectId, ref: "Chat" }, lastMsg: String },
+  ],
   photos: Array<String> || null,
 });
 

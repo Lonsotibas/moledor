@@ -1,7 +1,21 @@
 <script setup lang="ts">
+const emit = defineEmits(["showMenu"]);
+const { currentUser } = useUserData();
+let indexCurrentUser: Number;
+
 let users = await $fetch("/api/users");
+users.map((obj, index) => {
+  if (obj._id == currentUser.value?._id) {
+    indexCurrentUser = index;
+  }
+});
+users.splice(indexCurrentUser, 1);
 let isVisible = ref(false);
 let userSelected = ref({});
+
+onBeforeMount(() => {
+  emit("showMenu", true);
+});
 </script>
 
 <template>
@@ -14,6 +28,7 @@ let userSelected = ref({});
         @click="
           isVisible = !isVisible;
           userSelected = user;
+          emit('showMenu', false);
         "
       >
         <span>{{ user.nombre }}</span>

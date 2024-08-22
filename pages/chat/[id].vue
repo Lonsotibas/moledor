@@ -5,13 +5,15 @@ const route = useRoute();
 const chatId = route.params.id;
 const chat = await $fetch(`/api/chat/${chatId}`);
 const { currentUser } = useUserData();
-const otherUserId = chat.users.find((value) => {
-  return value.userId != currentUser.value._id;
+const otherUserId = await chat.users?.find((value) => {
+  return value.userId != currentUser.value?._id;
 });
 const otherUser = await $fetch(`/api/user/${otherUserId.userId}`);
 
 const message = ref("");
 const state = reactive({ messages: [] });
+
+state.messages = await $fetch(`/api/messages/${chatId}`);
 
 const sendMsg = async (e: Event) => {
   const msg = await $fetch("/api/message", {
@@ -31,7 +33,6 @@ onBeforeMount(() => {
 });
 
 onMounted(async () => {
-  state.messages = await $fetch(`/api/messages/${chatId}`);
   socket.on("message", (value) => {
     try {
       state.messages.push(value);
@@ -67,16 +68,14 @@ onUnmounted(() => {
       </div>
     </div>
     <div class="chat-footer">
-      <div class="dialog">
-        <textarea
-          v-model="message"
-          @keydown.enter="sendMsg($event)"
-          placeholder="Di algo"
-        />
-      </div>
-      <div></div>
+      <input
+        class="dialog"
+        type="text"
+        v-model="message"
+        @keydown.enter="sendMsg($event)"
+        placeholder="Di algo"
+      />
     </div>
-    <Connection />
   </main>
 </template>
 
@@ -92,7 +91,7 @@ onUnmounted(() => {
 }
 .chat-header {
   background-color: var(--black);
-  height: 3em;
+  height: 5%;
   padding: 5px;
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
@@ -104,7 +103,7 @@ onUnmounted(() => {
   text-align: right;
 }
 .chat-body {
-  height: 88%;
+  height: 75%;
   padding: 15px;
 }
 .received-msg {
@@ -129,22 +128,15 @@ onUnmounted(() => {
   margin-left: auto;
 }
 .chat-footer {
-  height: 12%;
-}
-.dialog {
-  width: 100%;
+  height: 15%;
   display: flex;
   justify-content: center;
   align-items: center;
 }
-.dialog textarea {
+.dialog {
   padding: 5px 10px;
   border-radius: 10px;
   width: 90%;
-  height: auto;
-  position: fixed;
-}
-.dialog textarea:focus {
-  outline: none;
+  height: 50px;
 }
 </style>

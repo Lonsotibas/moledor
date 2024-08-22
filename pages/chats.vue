@@ -1,19 +1,29 @@
 <script setup lang="ts">
-const users = await $fetch("/api/users");
+const { currentUser } = useUserData();
+const emit = defineEmits(["showMenu"]);
+const state = reactive({ chats: [] });
+
+onBeforeMount(() => {
+  currentUser.value?.chats.map(async (chats) => {
+    const chat = await $fetch(`/api/chat/${chats.chatId}`);
+    state.chats.push(chat);
+  });
+  emit("showMenu", true);
+});
 </script>
 
 <template>
   <main class="view">
     <ul class="chat-list">
-      <li v-for="(user, index) in users">
+      <li v-if="state.chats" v-for="(chat, index) in state.chats">
         <NuxtLink
-          :to="{ name: 'chat-id', params: { id: user._id } }"
+          :to="{ name: 'chat-id', params: { id: chat._id } }"
           class="chat-preview"
         >
           <Icon class="user-photo" size="80px" name="solar:user-circle-bold" />
-          <div class="user-name">{{ user.nombre }}</div>
-          <div class="last-message">Ultimo mensaje enviado...</div>
-          <div v-if="index < users.length - 1" class="divider"></div>
+          <!-- <div class="user-name">{{ user.nombre }}</div> -->
+          <!-- <div class="last-message">Ultimo mensaje enviado...</div> -->
+          <!-- <div v-if="index < state.chats.length - 1" class="divider"></div> -->
         </NuxtLink>
       </li>
     </ul>

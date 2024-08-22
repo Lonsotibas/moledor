@@ -1,5 +1,7 @@
 <script setup lang="ts">
 const { currentUser, setUserData } = useUserData();
+const emit = defineEmits(["showMenu"]);
+let newUser = ref(false);
 let nameSend = ref(false);
 
 let name = ref(null);
@@ -19,42 +21,80 @@ let vih = ref(null);
 let prep = ref(null);
 let tags = ref([]);
 
-const createUser = async (e: Event, newUser: Boolean) => {
+const loginUser = async (e: Event) => {
   e.preventDefault();
-  if (newUser) {
-    nameSend.value = true;
-  } else {
-    const body = {
-      name: name.value,
-      gender: gender.value,
-      pronoun: pronoun.value,
-      height: height.value,
-      weight: weight.value,
-      age: age.value,
-      rol: rol.value,
-      ethnicity: ethnicity.value,
-      rel_status: rel_status.value,
-      search: search.value,
-      encounter: encounter.value,
-      vaccines: vaccines.value,
-      vih: vih.value,
-      prep: prep.value,
-      tags: tags.value,
-    };
-    const res = await $fetch("/api/user", {
-      method: "post",
-      body,
-    });
-    setUserData(res);
+
+  const user = await $fetch(`/api/user/byName/${name.value}`);
+  if (user && pass.value == user.pass) {
     navigateTo("/main");
+    setUserData(user);
+    emit("showMenu", true);
+    return;
   }
 };
+
+const createUser = async (e: Event, nameSend: Boolean) => {
+  e.preventDefault();
+  const body = {
+    name: name.value,
+    pass: pass.value,
+    gender: gender.value,
+    pronoun: pronoun.value,
+    height: height.value,
+    weight: weight.value,
+    age: age.value,
+    rol: rol.value,
+    ethnicity: ethnicity.value,
+    rel_status: rel_status.value,
+    search: search.value,
+    encounter: encounter.value,
+    vaccines: vaccines.value,
+    vih: vih.value,
+    prep: prep.value,
+    tags: tags.value,
+  };
+  const res = await $fetch("/api/user", {
+    method: "post",
+    body,
+  });
+  navigateTo("/main");
+  emit("showMenu", true);
+  setUserData(res);
+};
+
+onBeforeMount(() => {
+  emit("showMenu", false);
+});
 </script>
 
 <template>
   <main class="view">
+    <form v-if="!newUser">
+      <div class="form">
+        <fieldset class="field">
+          <label for="name">Nombre de Usuario</label>
+          <input
+            @change="($event) => (name = $event.target?.value)"
+            type="text"
+            id="login-name"
+            name="login-name"
+          />
+        </fieldset>
+        <fieldset class="field">
+          <label for="name">Contraseña</label>
+          <input
+            @change="($event) => (pass = $event.target?.value)"
+            type="password"
+            id="login-pass"
+            name="login-pass"
+          />
+        </fieldset>
+        <button @click="loginUser" class="btn-sendForm">Iniciar Sesion</button>
+        <div @click="newUser = true" class="link-register">Registrarte</div>
+      </div>
+    </form>
     <form>
-      <div v-if="!nameSend" class="form">
+      <div v-if="newUser && !nameSend" class="form">
         <fieldset class="field">
           <label for="name">Nombre de Usuario</label>
           <input
@@ -64,16 +104,16 @@ const createUser = async (e: Event, newUser: Boolean) => {
             name="name"
           />
         </fieldset>
-        <!-- <fieldset class="field"> -->
-        <!--   <label for="name">Contraseña</label> -->
-        <!--   <input -->
-        <!--     @change="($event) => (pass = $event.target?.value)" -->
-        <!--     type="password" -->
-        <!--     id="pass" -->
-        <!--     name="pass" -->
-        <!--   /> -->
-        <!-- </fieldset> -->
-        <button @click="createUser($event, true)" class="btn-login">
+        <fieldset class="field">
+          <label for="name">Contraseña</label>
+          <input
+            @change="($event) => (pass = $event.target?.value)"
+            type="password"
+            id="pass"
+            name="pass"
+          />
+        </fieldset>
+        <button @click="nameSend = true" class="btn-sendForm">
           Crear Usuario
         </button>
       </div>
@@ -204,9 +244,7 @@ const createUser = async (e: Event, newUser: Boolean) => {
             name="tags"
           />
         </fieldset>
-        <button @click="createUser($event, false)" class="btn-login">
-          Crear Usuario
-        </button>
+        <button @click="createUser" class="btn-sendForm">Crear Usuario</button>
       </div>
     </form>
   </main>
@@ -254,7 +292,7 @@ form {
   height: 2.5em;
   width: 45vw;
 }
-.btn-login {
+.btn-sendForm {
   grid-column: 1/3;
   background-color: var(--white-soft);
   box-shadow: none;
