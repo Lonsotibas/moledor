@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { socket } from "~/components/socket";
-import { useSound } from "@vueuse/sound";
 import notification from "~/assets/sounds/notification.m4a";
 const route = useRoute();
 
@@ -36,7 +35,6 @@ onBeforeMount(() => {
 onMounted(async () => {
   socket.on("message", (value) => {
     try {
-      useSound(notification);
       state.messages.push(value);
     } catch (e) {
       console.error(e);
