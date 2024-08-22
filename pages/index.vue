@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { currentUser, setUserData } = useUserData();
+const { setUserData } = useUserData();
 const emit = defineEmits(["showMenu"]);
 let newUser = ref(false);
 let nameSend = ref(false);

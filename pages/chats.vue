@@ -15,7 +15,7 @@ onBeforeMount(() => {
 <template>
   <main class="view">
     <ul class="chat-list">
-      <li v-if="state.chats" v-for="(chat, index) in state.chats">
+      <li v-if="state.chats.length >= 1" v-for="(chat, index) in state.chats">
         <NuxtLink
           :to="{ name: 'chat-id', params: { id: chat._id } }"
           class="chat-preview"

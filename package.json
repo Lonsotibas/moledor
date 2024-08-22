@@ -1,25 +1,26 @@
 {
-  "name": "nuxt-app",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "build": "nuxt build",
-    "dev": "nuxt dev",
-    "generate": "nuxt generate",
-    "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
-  },
-  "dependencies": {
-    "mongodb": "^6.8.0",
-    "mongoose": "^8.5.2",
-    "nuxt": "^3.11.2",
-    "nuxt-server-utils": "^0.0.7",
-    "socket.io-client": "^4.7.5",
-    "vue": "^3.4.27",
-    "vue-router": "^4.3.2"
-  },
-  "devDependencies": {
-    "nuxt-icon": "^0.6.10",
-    "socket.io": "^4.7.5"
-  }
+    "name": "nuxt-app",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "nuxt build",
+        "dev": "nuxt dev",
+        "generate": "nuxt generate",
+        "preview": "nuxt preview",
+        "postinstall": "nuxt prepare"
+    },
+    "dependencies": {
+        "mongodb": "^6.8.0",
+        "mongoose": "^8.5.2",
+        "nuxt": "^3.11.2",
+        "nuxt-server-utils": "^0.0.7",
+        "socket.io-client": "^4.7.5",
+        "vue": "^3.4.27",
+        "vue-router": "^4.3.2"
+    },
+    {
+    "devDependencies": {
+        "nuxt-icon": "^0.6.10",
+        "socket.io": "^4.7.5"
+    }
 }

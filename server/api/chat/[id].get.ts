@@ -7,7 +7,10 @@ export default defineEventHandler(async (event) => {
       $in: id,
     },
   };
-  const chat = Chat.findOne(filters).populate("users.userId").exec();
+  const chat = Chat.findOne(filters).populate({
+    path: "users",
+    populate: { path: "userId" },
+  });
 
   return chat;
 });

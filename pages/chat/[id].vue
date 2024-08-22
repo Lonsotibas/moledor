@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { socket } from "~/components/socket";
+import { useSound } from "@vueuse/sound";
+import notification from "~/assets/sounds/notification.m4a";
 const route = useRoute();
 
 const chatId = route.params.id;
 const chat = await $fetch(`/api/chat/${chatId}`);
 const { currentUser } = useUserData();
-const otherUserId = await chat.users?.find((value) => {
+const otherUser = await chat.users?.find((value) => {
   return value.userId != currentUser.value?._id;
 });
-const otherUser = await $fetch(`/api/user/${otherUserId.userId}`);
 
 const message = ref("");
 const state = reactive({ messages: [] });
@@ -20,7 +21,7 @@ const sendMsg = async (e: Event) => {
     method: "post",
     body: {
       message: message.value,
-      senderId: currentUser.value._id,
+      senderId: currentUser.value?._id,
       receiverId: otherUser._id,
       chatId: chatId,
     },
@@ -35,6 +36,7 @@ onBeforeMount(() => {
 onMounted(async () => {
   socket.on("message", (value) => {
     try {
+      useSound(notification);
       state.messages.push(value);
     } catch (e) {
       console.error(e);
