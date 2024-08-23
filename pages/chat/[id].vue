@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { socket } from "~/components/socket";
+import notification from "~/assets/sounds/notification.m4a";
 const route = useRoute();
 
+const sound = new Audio(notification);
 const chatId = route.params.id;
 const chat = await $fetch(`/api/chat/${chatId}`);
 const { currentUser } = useUserData();
@@ -36,6 +38,7 @@ onMounted(async () => {
   socket.on("message", (value) => {
     try {
       state.messages.push(value);
+      sound.play();
     } catch (e) {
       console.error(e);
     }
