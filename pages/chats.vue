@@ -6,6 +6,11 @@ const state = reactive({ chats: [] });
 onBeforeMount(() => {
   currentUser.value?.chats.map(async (chats) => {
     const chat = await $fetch(`/api/chat/${chats.chatId}`);
+    chat.users.map((user, index: Number) => {
+      if (user._id != currentUser.value._id) {
+        chat.users.splice(index, 1);
+      }
+    });
     state.chats.push(chat);
   });
   emit("showMenu", true);
@@ -21,9 +26,9 @@ onBeforeMount(() => {
           class="chat-preview"
         >
           <Icon class="user-photo" size="80px" name="solar:user-circle-bold" />
-          <!-- <div class="user-name">{{ user.nombre }}</div> -->
-          <!-- <div class="last-message">Ultimo mensaje enviado...</div> -->
-          <!-- <div v-if="index < state.chats.length - 1" class="divider"></div> -->
+          <div class="user-name">{{ chat.users[0].userId.nombre }}</div>
+          <div class="last-message">Ultimo mensaje enviado...</div>
+          <div v-if="index < state.chats.length - 1" class="divider"></div>
         </NuxtLink>
       </li>
     </ul>

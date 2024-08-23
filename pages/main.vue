@@ -5,11 +5,11 @@ let indexCurrentUser: Number;
 
 let users = await $fetch("/api/users");
 users.map((obj, index) => {
-  if (obj._id == currentUser.value?._id) {
+  if (obj._id === currentUser.value?._id) {
     indexCurrentUser = index;
+    users.splice(indexCurrentUser, 1);
   }
 });
-users.splice(indexCurrentUser, 1);
 let isVisible = ref(false);
 let userSelected = ref({});
 

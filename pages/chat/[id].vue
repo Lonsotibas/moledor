@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { socket } from "~/components/socket";
-import notification from "~/assets/sounds/notification.m4a";
 const route = useRoute();
 
 const chatId = route.params.id;
@@ -10,7 +9,7 @@ const otherUser = await chat.users?.find((value) => {
   return value.userId != currentUser.value?._id;
 });
 
-const message = ref("");
+const message: Ref<String> | Ref<null> = ref("");
 const state = reactive({ messages: [] });
 
 state.messages = await $fetch(`/api/messages/${chatId}`);
@@ -25,6 +24,7 @@ const sendMsg = async (e: Event) => {
       chatId: chatId,
     },
   });
+  message.value = null;
   socket.emit("message", msg);
 };
 
@@ -51,7 +51,7 @@ onUnmounted(() => {
   <main class="view">
     <div class="chat-header">
       <Icon @click="$router.back()" size="20px" name="ion:caret-back" />
-      <span>{{ otherUser?.nombre }}</span>
+      <span>{{ otherUser?.userId.nombre }}</span>
       <div class="opts">
         <Icon size="30px" name="ri:prohibited-2-line" />
         <Icon size="30px" name="solar:fire-minimalistic-outline" />
@@ -62,7 +62,7 @@ onUnmounted(() => {
         <div v-if="msg.senderId === currentUser._id" class="sent-msg">
           {{ msg.message }}
         </div>
-        <div v-if="msg.senderId === otherUser._id" class="received-msg">
+        <div v-if="msg.senderId !== currentUser._id" class="received-msg">
           {{ msg.message }}
         </div>
       </div>
@@ -134,6 +134,7 @@ onUnmounted(() => {
   align-items: center;
 }
 .dialog {
+  font-size: 16px;
   padding: 5px 10px;
   border-radius: 10px;
   width: 90%;

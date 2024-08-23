@@ -1,5 +1,5 @@
 import { now } from "mongoose";
-import { Message } from "../models/message.model";
+import { Message } from "~/server/models/message.model";
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event);

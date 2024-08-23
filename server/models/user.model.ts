@@ -1,8 +1,9 @@
 import { Schema, model } from "mongoose";
 
 const UserSchema = new Schema({
-  nombre: { type: String || null, unique: true },
+  nombre: { type: String, unique: true },
   pass: String,
+  acerca: String || null,
   pronombre: String || null,
   medidas: {
     estatura: Number || null,

@@ -74,15 +74,15 @@ const startChat = async () => {
           <span id="user-age">{{ props.user.edad }}</span>
         </div>
         <!-- Distancia -->
-        <div id="user-distance">
-          <span>0m de distancia</span>
-        </div>
+        <!-- <div id="user-distance"> -->
+        <!--   <span>0m de distancia</span> -->
+        <!-- </div> -->
         <!-- Acerca de mi -->
         <div id="user-about">
           <span class="modal-subtitle">Acerca de mi</span>
           <textarea class="about-text">
-Lorem ipsum dolor sit amet consectetur adipisicing elit. Tempore aut minima in unde temporibus necessitatibus impedit provident aperiam voluptatem dolorum. Nihil magnam autem commodi inventore illo dolor ad suscipit ipsam.</textarea
-          >
+              {{ props.user.acerca }}
+          </textarea>
         </div>
         <!-- Usuario: Informacion Especifica -->
         <span class="modal-subtitle">Descripcion</span>
@@ -208,6 +208,9 @@ Lorem ipsum dolor sit amet consectetur adipisicing elit. Tempore aut minima in u
 }
 #user-about {
   margin-top: 15px;
+}
+#user-about textarea {
+  width: 80%;
 }
 #about-title {
   display: block;
