@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const props = defineProps(["user", "isVisible"]);
+const props = defineProps(["user", "userImg", "isVisible"]);
 const emit = defineEmits(["closed"]);
 const { currentUser } = useUserData();
 const chatId = ref("");
@@ -59,6 +59,7 @@ const startChat = async () => {
     <div class="modal-body">
       <!-- Usuario: Foto -->
       <div class="user-img">
+        <img :src="userImg" alt="" />
         <NuxtLink @click="chatExist()">
           <Icon class="chat-icon" size="40px" name="ph:chat" />
         </NuxtLink>
@@ -176,13 +177,23 @@ const startChat = async () => {
 /* Usuario: Foto */
 .user-img {
   position: sticky;
-  background-color: var(--black-mute);
+  background-color: var(--black);
   height: 65vh;
 }
+.user-img img {
+  object-fit: contain;
+  width: 100%;
+  height: 100%;
+}
 .chat-icon {
+  padding: 5px;
+  border-radius: 20px;
+  background-color: rgba(0, 0, 0, 0.7);
   position: absolute;
   bottom: 10px;
   right: 10px;
+  height: 50px;
+  width: 50px;
 }
 /* Usuario: Informacion General */
 .user-props {

@@ -64,6 +64,7 @@ users.map((obj, index) => {
 });
 let isVisible = ref(false);
 let userSelected = ref({});
+let userSelectedImg = ref(null);
 
 onBeforeMount(() => {
   emit("showMenu", true);
@@ -80,6 +81,7 @@ onBeforeMount(() => {
         @click="
           isVisible = !isVisible;
           userSelected = user;
+          userSelectedImg = images[index + 1];
           emit('showMenu', false);
         "
       >
@@ -89,7 +91,11 @@ onBeforeMount(() => {
       <UserModal
         v-if="isVisible"
         :user="userSelected"
-        @closed="isVisible = !isVisible"
+        :userImg="userSelectedImg"
+        @closed="
+          isVisible = !isVisible;
+          emit('showMenu', true);
+        "
       />
     </div>
   </main>
@@ -106,6 +112,7 @@ onBeforeMount(() => {
   grid-template-columns: 1fr 1fr 1fr;
 }
 .card {
+  background-color: black;
   margin: 2px;
   height: 14vh;
   margin: 0;
