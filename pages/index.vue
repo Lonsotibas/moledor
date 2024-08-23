@@ -264,6 +264,9 @@ form {
   justify-content: center;
   align-items: center;
 }
+input {
+  font-size: 16px;
+}
 .form.user-info {
   display: grid;
   grid-template-columns: 1fr 1fr;

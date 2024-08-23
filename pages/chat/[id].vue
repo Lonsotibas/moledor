@@ -9,7 +9,7 @@ const otherUser = await chat.users?.find((value) => {
   return value.userId != currentUser.value?._id;
 });
 
-const message: Ref<String> | Ref<null> = ref("");
+const message = ref("");
 const state = reactive({ messages: [] });
 
 state.messages = await $fetch(`/api/messages/${chatId}`);
@@ -105,6 +105,7 @@ onUnmounted(() => {
 .chat-body {
   height: 75%;
   padding: 15px;
+  overflow-y: scroll;
 }
 .received-msg {
   margin-bottom: 10px;
@@ -138,6 +139,6 @@ onUnmounted(() => {
   padding: 5px 10px;
   border-radius: 10px;
   width: 90%;
-  height: 50px;
+  height: 60px;
 }
 </style>
