@@ -114,7 +114,7 @@ onBeforeMount(() => {
 .card {
   background-color: black;
   margin: 2px;
-  height: 14vh;
+  height: 17vh;
   margin: 0;
   position: relative;
   display: flex;

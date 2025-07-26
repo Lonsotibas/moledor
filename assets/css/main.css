@@ -5,7 +5,10 @@
   position: relative;
   margin: 0;
   padding: 0;
-  background-color: var(--black-soft);
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: none;
+  background-color: var(--black);
 }
 
 .view {

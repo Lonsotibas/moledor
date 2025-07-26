@@ -90,10 +90,12 @@ onBeforeMount(() => {
           />
         </fieldset>
         <button @click="loginUser" class="btn-sendForm">Iniciar Sesion</button>
-        <div @click="newUser = true" class="link-register">Registrarte</div>
+        <button @click="newUser = true" class="link-register">
+          Registrarte
+        </button>
       </div>
     </form>
-    <form>
+    <form v-if="newUser">
       <div v-if="newUser && !nameSend" class="form">
         <fieldset class="field">
           <label for="name">Nombre de Usuario</label>
@@ -284,27 +286,45 @@ input {
   font-size: 1.2em;
   display: block;
   margin-bottom: 6px;
+  color: var(--yellow);
 }
-.field input {
+.field input,
+.field input:active,
+.field input:focus {
   text-align: center;
   color: var(--white-soft);
   background-color: var(--black);
-  border: 1px solid var(--white-soft);
+  border: 1px solid var(--yellow);
   border-radius: 15px;
   box-shadow: none;
   height: 2.5em;
   width: 45vw;
+  -webkit-box-shadow: none;
+  outline: none;
 }
 .btn-sendForm {
   grid-column: 1/3;
-  background-color: var(--white-soft);
+  background-color: var(--yellow);
   box-shadow: none;
-  color: var(--black-mute);
-  font-weight: 600;
+  color: var(--black);
+  font-size: 0.9em;
+  font-weight: 800;
   border-style: hidden;
   border-radius: 30px;
-  height: 2.5em;
+  height: 3em;
   width: 150px;
   margin: 1.2em auto;
+}
+.link-register {
+  grid-column: 1/3;
+  background-color: var(--white);
+  box-shadow: none;
+  color: var(--black);
+  font-size: 0.9em;
+  font-weight: 800;
+  border-style: hidden;
+  border-radius: 30px;
+  height: 3em;
+  width: 150px;
 }
 </style>

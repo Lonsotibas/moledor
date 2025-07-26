@@ -4,15 +4,15 @@
   --white-soft: #f8f8f8;
   --white-mute: #f2f2f2;
 
-  --black: #141514;
-  --black-soft: #1f201e;
+  --black: #121113; /* Night */
+  --black-soft: #222725; /* Eerie black */
   --black-mute: #333531;
 
   --gray: #949396;
 
-  --yellow: #ffc533;
+  --yellow: #ffbc42;
 
-  --green: #daffef;
+  --green: #61988e; /* Zomp */
 
   --color-background: var(--black-mute);
   --color-text: var(--white);

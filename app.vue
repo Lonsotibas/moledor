@@ -14,7 +14,7 @@ onBeforeMount(() => {
   <div id="app">
     <NuxtPage
       @showMenu="
-        (show: Boolean) => {
+        (show: boolean) => {
           showMenu = show;
         }
       "

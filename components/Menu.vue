@@ -11,6 +11,7 @@ let itemPressed = ref("index");
         <li class="nav-item">
           <NuxtLink to="/main" @click="itemPressed = 'index'">
             <Icon
+              :class="itemPressed != 'index' ? 'icon' : 'icon-active'"
               :name="itemPressed == 'index' ? 'bi:eye-fill' : 'bi:eye'"
               size="2.5em"
             ></Icon>
@@ -20,6 +21,7 @@ let itemPressed = ref("index");
         <li class="nav-item">
           <NuxtLink to="/chats" @click="itemPressed = 'chat'">
             <Icon
+              :class="itemPressed != 'chat' ? 'icon' : 'icon-active'"
               :name="
                 itemPressed == 'chat'
                   ? 'mingcute:message-3-fill'
@@ -33,6 +35,7 @@ let itemPressed = ref("index");
         <li class="nav-item" virtual>
           <NuxtLink to="/xxo" @click="itemPressed = 'virtual'">
             <Icon
+              :class="itemPressed != 'virtual' ? 'icon' : 'icon-active'"
               :name="
                 itemPressed == 'virtual'
                   ? 'streamline:virtual-reality-solid'
@@ -67,5 +70,8 @@ let itemPressed = ref("index");
 }
 .nav-item > a {
   color: white;
+}
+.icon-active {
+  color: var(--yellow);
 }
 </style>

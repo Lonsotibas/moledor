@@ -27,6 +27,7 @@ const UserSchema = new Schema({
     { chatId: { type: Schema.Types.ObjectId, ref: "Chat" }, lastMsg: String },
   ],
   photos: Array<String> || null,
+  blocked: [{ userId: { type: Schema.Types.ObjectId, ref: "User" } }],
 });
 
 export const User = model("User", UserSchema);

@@ -78,6 +78,7 @@ onUnmounted(() => {
         @keydown.enter="sendMsg($event)"
         placeholder="Di algo"
       />
+      <Icon id="icon-send" @click="sendMsg($event)" name="ion:send-sharp" />
     </div>
   </main>
 </template>
@@ -88,9 +89,10 @@ onUnmounted(() => {
   top: 0;
   left: 0;
   z-index: 2;
-  height: 100vh;
+  max-height: 100vh;
   width: 100vw;
-  background-color: var(--black-soft);
+  background-color: var(--black);
+  overflow-y: hidden;
 }
 .chat-header {
   background-color: var(--black);
@@ -117,8 +119,8 @@ onUnmounted(() => {
   max-width: 200px;
   border-radius: 20px;
   background-color: var(--yellow);
-  color: black;
-  font-weight: 400;
+  color: white;
+  font-weight: 600;
 }
 .sent-msg {
   margin-bottom: 10px;
@@ -128,7 +130,7 @@ onUnmounted(() => {
   border-radius: 20px;
   background-color: var(--green);
   color: black;
-  font-weight: 400;
+  font-weight: 600;
   margin-left: auto;
 }
 .chat-footer {
@@ -138,10 +140,17 @@ onUnmounted(() => {
   align-items: center;
 }
 .dialog {
+  margin: 0 auto;
   font-size: 16px;
   padding: 5px 10px;
   border-radius: 10px;
   width: 90%;
   height: 60px;
+}
+#icon-send {
+  font-size: 30px;
+  position: absolute;
+  right: 1em;
+  color: var(--yellow);
 }
 </style>
