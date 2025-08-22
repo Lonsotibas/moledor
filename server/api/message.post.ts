@@ -6,6 +6,8 @@ export default defineEventHandler(async (event) => {
 
   const message = new Message({
     message: body.message,
+    mediaUrl: body.mediaUrl,
+    mediaType: body.mediaType,
     senderId: body.senderId,
     receiverId: body.receiverId,
     chatId: body.chatId,

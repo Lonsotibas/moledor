@@ -1,5 +1,16 @@
 <script setup lang="ts">
 import { ClientOnly } from "#components";
+import { onUnmounted } from "vue";
+
+onUnmounted(() => {
+  const scene = document.querySelector("a-scene");
+  if (scene?.exitVR) scene.exitVR();
+  if (scene?.renderer?.xr) scene.renderer.xr.enabled = false;
+  const video = document.querySelector("video");
+  if (video?.srcObject) {
+    video.srcObject.getTracks().forEach((track) => track.stop());
+  }
+});
 </script>
 
 <template>

@@ -2,6 +2,8 @@ import { Schema, model } from "mongoose";
 
 const MessageSchema = new Schema({
   message: String,
+  mediaUrl: String,
+  mediaType: String,
   senderId: String,
   receiverId: String,
   chatId: { type: Schema.Types.ObjectId, ref: "Chat" },

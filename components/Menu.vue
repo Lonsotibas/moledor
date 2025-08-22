@@ -52,6 +52,9 @@ let itemPressed = ref("index");
 
 <style scoped>
 /* CSS de Footer en main.css */
+footer {
+  z-index: 1;
+}
 #navbar {
   display: flex;
   height: 10vh;
