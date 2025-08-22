@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { onBeforeMount, ref, computed } from "vue";
+
 import image1 from "~/assets/img/1.png";
 import image2 from "~/assets/img/2.png";
 import image3 from "~/assets/img/3.png";
@@ -24,6 +26,7 @@ import image22 from "~/assets/img/22.png";
 import image23 from "~/assets/img/23.png";
 import image24 from "~/assets/img/24.png";
 import image25 from "~/assets/img/25.png";
+
 const images = [
   image1,
   image2,
@@ -51,20 +54,50 @@ const images = [
   image24,
   image25,
 ];
-const emit = defineEmits(["showMenu"]);
-const { currentUser } = useUserData();
-let indexCurrentUser: Number;
 
-let users = await $fetch("/api/users");
-users.map((obj, index) => {
-  if (obj._id === currentUser.value?._id) {
-    indexCurrentUser = index;
-    users.splice(indexCurrentUser, 1);
-  }
+type AppUser = {
+  _id: string;
+  nombre: string;
+  photos?: string[] | null;
+};
+
+const emit = defineEmits<{
+  (e: "showMenu", value: boolean): void;
+}>();
+
+const { currentUser } = useUserData();
+
+const { data: usersData } = await useFetch<AppUser[]>("/api/users", {
+  default: () => [],
 });
-let isVisible = ref(false);
-let userSelected = ref({});
-let userSelectedImg = ref(null);
+
+const users = computed<AppUser[]>(() => {
+  const list = usersData.value ?? [];
+  const me = currentUser.value?._id;
+  return me ? list.filter((u) => u._id !== me) : list;
+});
+
+function imageFor(user: AppUser, idx: number) {
+  const first = user.photos?.[0];
+  return first && typeof first === "string" && first.trim().length
+    ? first
+    : images[idx % images.length];
+}
+
+const isVisible = ref(false);
+const userSelected = ref<AppUser | null>(null);
+const userSelectedImg = ref<string | null>(null);
+
+function openCard(user: AppUser, idx: number) {
+  isVisible.value = true;
+  userSelected.value = user;
+  userSelectedImg.value = imageFor(user, idx);
+  emit("showMenu", false);
+}
+function closeModal() {
+  isVisible.value = false;
+  emit("showMenu", true);
+}
 
 onBeforeMount(() => {
   emit("showMenu", true);
@@ -74,28 +107,31 @@ onBeforeMount(() => {
 <template>
   <main class="view">
     <Header v-if="!isVisible" />
-    <div class="gallery">
-      <div
-        class="card"
+
+    <div class="gallery" role="list" aria-label="Lista de perfiles">
+      <button
         v-for="(user, index) in users"
-        @click="
-          isVisible = !isVisible;
-          userSelected = user;
-          userSelectedImg = images[index + 1];
-          emit('showMenu', false);
-        "
+        :key="user._id"
+        class="card"
+        role="listitem"
+        type="button"
+        @click="openCard(user, index)"
       >
-        <span class="user-name">{{ user.nombre }}</span>
-        <img :src="images[index + 1]" alt="" />
-      </div>
+        <img
+          class="photo"
+          :src="imageFor(user, index)"
+          :alt="`Foto de ${user.nombre}`"
+          loading="lazy"
+          decoding="async"
+        />
+        <span class="name">{{ user.nombre }}</span>
+      </button>
+
       <UserModal
-        v-if="isVisible"
+        v-if="isVisible && userSelected"
         :user="userSelected"
         :userImg="userSelectedImg"
-        @closed="
-          isVisible = !isVisible;
-          emit('showMenu', true);
-        "
+        @closed="closeModal"
       />
     </div>
   </main>
@@ -103,31 +139,63 @@ onBeforeMount(() => {
 
 <style scoped>
 .view {
-  padding-top: 3em;
-}
-.gallery {
-  height: 100%;
-  overflow-y: scroll;
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-}
-.card {
-  background-color: black;
-  margin: 2px;
-  height: 17vh;
-  margin: 0;
-  position: relative;
-  display: flex;
-  justify-content: center;
+  padding-top: 3.25rem;
 }
 
-.card span {
-  text-align: left;
-  background-color: rgba(0, 0, 0, 0.7);
-  color: var(--color-text);
-  font-size: 0.9em;
+.gallery {
+  height: 100%;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 6px;
+  padding: 6px;
+}
+
+.card {
+  position: relative;
+  display: block;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  background: #000;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  aspect-ratio: 1 / 1.15;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.card:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #fff2, 0 0 0 4px #000a;
+  border-radius: 12px;
+}
+
+.photo {
   position: absolute;
-  bottom: 0;
+  inset: 0;
   width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.name {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 8px 10px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #fff;
+  text-align: left;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.65), transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .photo {
+    transition: none !important;
+  }
 }
 </style>
