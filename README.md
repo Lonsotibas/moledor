@@ -1,75 +1,42 @@
-# Nuxt 3 Minimal Starter
+# Moledor
 
-Look at the [Nuxt 3 documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+# 🏗️ Tecnologias
 
-## Setup
+Nuxt 3 (Vue 3 + Vite)
 
-Make sure to install the dependencies:
+Three.js
 
-```bash
-# npm
-npm install
+WebXR with an AR.js fallback for non-WebXR browsers
 
-# pnpm
-pnpm install
+Tailwind / DaisyUI
 
-# yarn
-yarn install
+Socket.IO
 
-# bun
-bun install
-```
+# 📦 Estructura Proyecto
 
-## Development Server
-
-Start the development server on `http://localhost:3000`:
-
-```bash
-# npm
-npm run dev
-
-# pnpm
-pnpm run dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
-```
-
-## Production
-
-Build the application for production:
-
-```bash
-# npm
-npm run build
-
-# pnpm
-pnpm run build
-
-# yarn
-yarn build
-
-# bun
-bun run build
-```
-
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm run preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+.
+├─ assets/
+│ ├─ css/ # Estilos
+│ ├─ icon/ # Iconos
+│ ├─ img/ # Imagenes
+│ ├─ sounds/ # Sonidos
+├─ components/
+├─ composables/
+├─ pages/
+│ ├─ chat/
+│ ├─ [id].vue # Chat
+│ ├─ chats.vue # Chats
+│ ├─ index.vue # Login/Registro
+│ ├─ main.vue # Pantalla de usuarios
+│ └─ xxo.vue # Realidad Aumentada
+├─ public/
+│ └─ textures/
+├─ server/
+│ ├─ api/
+│ ├─ middleware/
+│ ├─ models/
+│ ├─ plugins/
+│ ├─ routes/
+│ ├─ ws/
+├─ uploads/
+└─ nuxt.config.ts

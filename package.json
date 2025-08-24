@@ -10,17 +10,19 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "@tailwindcss/vite": "^4.1.12",
     "aframe": "^1.7.1",
     "mongodb": "^6.8.0",
     "mongoose": "^8.5.2",
     "nuxt": "^3.11.2",
     "nuxt-server-utils": "^0.0.7",
-    "pg": "^8.13.3",
     "socket.io-client": "^4.7.5",
+    "tailwindcss": "^4.1.12",
     "vue": "^3.4.27",
     "vue-router": "^4.3.2"
   },
   "devDependencies": {
+    "daisyui": "^5.0.50",
     "nuxt-icon": "^0.6.10",
     "socket.io": "^4.7.5"
   }

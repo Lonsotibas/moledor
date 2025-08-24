@@ -1,4 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+import tailwindcss from "@tailwindcss/vite";
+
 export default defineNuxtConfig({
   app: {
     head: {
@@ -39,6 +41,9 @@ export default defineNuxtConfig({
     config: {
       ignoredElements: ["a-scene", "a-camera", "a-box", "a-entity"],
     },
+  },
+  vite: {
+    plugins: [tailwindcss()],
   },
   compatibilityDate: "2024-08-09",
 });

@@ -55,29 +55,23 @@ const images = [
   image25,
 ];
 
-type AppUser = {
-  _id: string;
-  nombre: string;
-  photos?: string[] | null;
-};
-
 const emit = defineEmits<{
   (e: "showMenu", value: boolean): void;
 }>();
 
 const { currentUser } = useUserData();
 
-const { data: usersData } = await useFetch<AppUser[]>("/api/users", {
+const { data: usersData } = await useFetch("/api/users", {
   default: () => [],
 });
 
-const users = computed<AppUser[]>(() => {
+const users = computed(() => {
   const list = usersData.value ?? [];
   const me = currentUser.value?._id;
   return me ? list.filter((u) => u._id !== me) : list;
 });
 
-function imageFor(user: AppUser, idx: number) {
+function imageFor(user, idx: number) {
   const first = user.photos?.[0];
   return first && typeof first === "string" && first.trim().length
     ? first
@@ -85,10 +79,10 @@ function imageFor(user: AppUser, idx: number) {
 }
 
 const isVisible = ref(false);
-const userSelected = ref<AppUser | null>(null);
+const userSelected = ref("");
 const userSelectedImg = ref<string | null>(null);
 
-function openCard(user: AppUser, idx: number) {
+function openCard(user, idx: number) {
   isVisible.value = true;
   userSelected.value = user;
   userSelectedImg.value = imageFor(user, idx);
@@ -126,14 +120,16 @@ onBeforeMount(() => {
         />
         <span class="name">{{ user.nombre }}</span>
       </button>
-
+    </div>
+    <Teleport to="body">
       <UserModal
-        v-if="isVisible && userSelected"
+        v-if="isVisible"
+        :isVisible="isVisible"
         :user="userSelected"
         :userImg="userSelectedImg"
         @closed="closeModal"
       />
-    </div>
+    </Teleport>
   </main>
 </template>
 
@@ -190,12 +186,5 @@ onBeforeMount(() => {
   color: #fff;
   text-align: left;
   background: linear-gradient(to top, rgba(0, 0, 0, 0.65), transparent);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .card,
-  .photo {
-    transition: none !important;
-  }
 }
 </style>

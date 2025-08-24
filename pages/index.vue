@@ -286,15 +286,15 @@ input {
   font-size: 1.2em;
   display: block;
   margin-bottom: 6px;
-  color: var(--yellow);
+  color: var(--color-yellow);
 }
 .field input,
 .field input:active,
 .field input:focus {
   text-align: center;
-  color: var(--white-soft);
-  background-color: var(--black);
-  border: 1px solid var(--yellow);
+  color: var(--color-white-soft);
+  background-color: var(--color-black);
+  border: 1px solid var(--color-yellow);
   border-radius: 15px;
   box-shadow: none;
   height: 2.5em;
@@ -304,7 +304,7 @@ input {
 }
 .btn-sendForm {
   grid-column: 1/3;
-  background-color: var(--yellow);
+  background-color: var(--color-yellow);
   box-shadow: none;
   color: var(--black);
   font-size: 0.9em;
@@ -317,9 +317,9 @@ input {
 }
 .link-register {
   grid-column: 1/3;
-  background-color: var(--white);
+  background-color: var(--color-white);
   box-shadow: none;
-  color: var(--black);
+  color: var(--color-black);
   font-size: 0.9em;
   font-weight: 800;
   border-style: hidden;
