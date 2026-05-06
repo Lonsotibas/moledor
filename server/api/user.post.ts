@@ -1,4 +1,4 @@
-import bcrypt from "bcryptjs";
+import { hashPassword } from "~/server/utils/password";
 import { User } from "../models/user.model";
 
 const num = (v: unknown) => {
@@ -20,11 +20,11 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, message: "Nombre y contraseña requeridos" });
     }
 
-    const hashedPass = await bcrypt.hash(String(body.pass), 10);
+    const hashed = hashPassword(String(body.pass));
 
     let user = new User({
       nombre: body.name,
-      pass: hashedPass,
+      pass: hashed,
       genero: str(body.gender),
       pronombre: str(body.pronoun),
       medidas: {

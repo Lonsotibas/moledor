@@ -1,4 +1,4 @@
-import bcrypt from "bcryptjs";
+import { verifyPassword } from "~/server/utils/password";
 import { User } from "~/server/models/user.model";
 
 export default defineEventHandler(async (event) => {
@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 401, message: "Credenciales inválidas" });
     }
 
-    const valid = await bcrypt.compare(String(pass), user.pass);
+    const valid = verifyPassword(String(pass), user.pass);
     if (!valid) {
       throw createError({ statusCode: 401, message: "Credenciales inválidas" });
     }

@@ -19,8 +19,8 @@ const UserSchema = new Schema({
   encuentro: [String],
   salud: {
     vacunas: [String],
-    vih: { type: Boolean, default: null },
-    prep: { type: Boolean, default: null },
+    vih: { type: String, default: null },
+    prep: { type: String, default: null },
   },
   tags: [String],
   chats: [
