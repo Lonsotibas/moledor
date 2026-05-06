@@ -1,9 +1,11 @@
 import { Message } from "~/server/models/message.model";
 
 export default defineEventHandler(async (event) => {
-  const chatId = getRouterParam(event, "chatId");
-
-  const response = Message.find({ chatId: chatId });
-
-  return response;
+  try {
+    const chatId = getRouterParam(event, "chatId");
+    const messages = await Message.find({ chatId });
+    return messages;
+  } catch {
+    throw createError({ statusCode: 500, message: "Error del servidor" });
+  }
 });

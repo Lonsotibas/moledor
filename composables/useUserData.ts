@@ -1,12 +1,14 @@
-const useUserData = () => {
-  const currentUser = useCookie("user");
+interface UserData {
+  _id: string;
+  nombre: string;
+  [key: string]: unknown;
+}
 
-  const setUserData = (user) => {
-    if (!user) {
-      currentUser.value = null;
-      return;
-    }
-    currentUser.value = currentUser.value || user;
+const useUserData = () => {
+  const currentUser = useCookie<UserData | null>("user");
+
+  const setUserData = (user: UserData | null) => {
+    currentUser.value = user;
   };
 
   return {

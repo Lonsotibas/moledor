@@ -56,10 +56,6 @@ const logout = () => {
   closeMenu();
   navigateTo("/");
 };
-const goSettings = () => {
-  closeMenu();
-  //navigateTo("/settings");
-};
 
 function focusNext(dir: 1 | -1) {
   const items = Array.from(
@@ -143,18 +139,6 @@ function onKeydownMenu(e: KeyboardEvent) {
               <span class="uc-sub">{{ currentUser?.email || "Cuenta" }}</span>
             </div>
           </div>
-
-          <hr class="sep" />
-
-          <button
-            class="menu-item"
-            role="menuitem"
-            data-menuitem
-            @click="goSettings"
-          >
-            <Icon name="solar:settings-linear" />
-            <span>Configuración</span>
-          </button>
 
           <hr class="sep" />
 

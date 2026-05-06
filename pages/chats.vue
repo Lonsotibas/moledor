@@ -52,10 +52,15 @@ async function loadChats() {
   try {
     state.loading = true;
     const myChats = currentUser.value?.chats || [];
-    const fetched = await Promise.all(
-      myChats.map((c: any) => $fetch<Chat>(`/api/chat/${c.chatId}`))
-    );
-    // Filter out malformed items just in case
+    const chatIds = (myChats as any[]).map((c) => c.chatId).filter(Boolean);
+    if (!chatIds.length) {
+      state.chats = [];
+      return;
+    }
+    const fetched = await $fetch<Chat[]>("/api/chats", {
+      method: "post",
+      body: { chatIds },
+    });
     state.chats = fetched.filter((c) => c && c._id && Array.isArray(c.users));
   } finally {
     state.loading = false;

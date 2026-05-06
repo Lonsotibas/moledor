@@ -12,6 +12,7 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.1.12",
     "aframe": "^1.7.1",
+    "bcryptjs": "^3.0.3",
     "mongodb": "^6.8.0",
     "mongoose": "^8.5.2",
     "nuxt": "^3.11.2",
@@ -22,6 +23,7 @@
     "vue-router": "^4.3.2"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^3.0.0",
     "daisyui": "^5.0.50",
     "nuxt-icon": "^0.6.10",
     "socket.io": "^4.7.5"

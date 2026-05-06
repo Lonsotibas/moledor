@@ -1,330 +1,410 @@
 <script setup lang="ts">
 const { setUserData } = useUserData();
 const emit = defineEmits(["showMenu"]);
-let newUser = ref(false);
-let nameSend = ref(false);
+const newUser = ref(false);
+const nameSend = ref(false);
 
-let name = ref(null);
-let pass = ref(null);
-let gender = ref(null);
-let pronoun = ref(null);
-let height = ref(null);
-let weight = ref(null);
-let age = ref(null);
-let rol = ref(null);
-let ethnicity = ref(null);
-let rel_status = ref(null);
-let search = ref([]);
-let encounter = ref([]);
-let vaccines = ref([]);
-let vih = ref(null);
-let prep = ref(null);
-let tags = ref([]);
+const name = ref("");
+const pass = ref("");
+const gender = ref("");
+const pronoun = ref("");
+const height = ref("");
+const weight = ref("");
+const age = ref("");
+const rol = ref("");
+const ethnicity = ref("");
+const rel_status = ref("");
+const search = ref<string[]>([]);
+const encounter = ref<string[]>([]);
+const vaccines = ref<string[]>([]);
+const vih = ref("");
+const prep = ref("");
+const tags = ref<string[]>([]);
 
 const loginUser = async (e: Event) => {
-  e.preventDefault();
-
-  const user = await $fetch(`/api/user/byName/${name.value}`);
-  if (user && pass.value == user.pass) {
-    navigateTo("/main");
-    setUserData(user);
-    emit("showMenu", true);
-    return;
-  }
+    e.preventDefault();
+    try {
+        const user = await $fetch("/api/auth/login", {
+            method: "post",
+            body: { name: name.value, pass: pass.value },
+        });
+        setUserData(user as any);
+        emit("showMenu", true);
+        navigateTo("/main");
+    } catch {
+        // Credenciales inválidas
+    }
 };
 
-const createUser = async (e: Event, nameSend: Boolean) => {
-  e.preventDefault();
-  const body = {
-    name: name.value,
-    pass: pass.value,
-    gender: gender.value,
-    pronoun: pronoun.value,
-    height: height.value,
-    weight: weight.value,
-    age: age.value,
-    rol: rol.value,
-    ethnicity: ethnicity.value,
-    rel_status: rel_status.value,
-    search: search.value,
-    encounter: encounter.value,
-    vaccines: vaccines.value,
-    vih: vih.value,
-    prep: prep.value,
-    tags: tags.value,
-  };
-  const res = await $fetch("/api/user", {
-    method: "post",
-    body,
-  });
-  navigateTo("/main");
-  emit("showMenu", true);
-  setUserData(res);
+const createUser = async (e: Event) => {
+    e.preventDefault();
+    try {
+        const res = await $fetch("/api/user", {
+            method: "post",
+            body: {
+                name: name.value,
+                pass: pass.value,
+                gender: gender.value,
+                pronoun: pronoun.value,
+                height: height.value,
+                weight: weight.value,
+                age: age.value,
+                rol: rol.value,
+                ethnicity: ethnicity.value,
+                rel_status: rel_status.value,
+                search: search.value,
+                encounter: encounter.value,
+                vaccines: vaccines.value,
+                vih: vih.value,
+                prep: prep.value,
+                tags: tags.value,
+            },
+        });
+        setUserData(res as any);
+        emit("showMenu", true);
+        navigateTo("/main");
+    } catch {
+        // Error al crear usuario
+    }
 };
 
 onBeforeMount(() => {
-  emit("showMenu", false);
+    emit("showMenu", false);
 });
 </script>
 
 <template>
-  <main class="view">
-    <form v-if="!newUser">
-      <div class="form">
-        <fieldset class="field">
-          <label for="name">Nombre de Usuario</label>
-          <input
-            @change="($event) => (name = $event.target?.value)"
-            type="text"
-            id="login-name"
-            name="login-name"
-          />
-        </fieldset>
-        <fieldset class="field">
-          <label for="name">Contraseña</label>
-          <input
-            @change="($event) => (pass = $event.target?.value)"
-            type="password"
-            id="login-pass"
-            name="login-pass"
-          />
-        </fieldset>
-        <button @click="loginUser" class="btn-sendForm">Iniciar Sesion</button>
-        <button @click="newUser = true" class="link-register">
-          Registrarte
-        </button>
-      </div>
-    </form>
-    <form v-if="newUser">
-      <div v-if="newUser && !nameSend" class="form">
-        <fieldset class="field">
-          <label for="name">Nombre de Usuario</label>
-          <input
-            @change="($event) => (name = $event.target?.value)"
-            type="text"
-            id="name"
-            name="name"
-          />
-        </fieldset>
-        <fieldset class="field">
-          <label for="name">Contraseña</label>
-          <input
-            @change="($event) => (pass = $event.target?.value)"
-            type="password"
-            id="pass"
-            name="pass"
-          />
-        </fieldset>
-        <button @click="nameSend = true" class="btn-sendForm">
-          Crear Usuario
-        </button>
-      </div>
-      <div v-else class="form user-info">
-        <fieldset class="field">
-          <label for="gender">Genero</label>
-          <input
-            @change="($event) => (gender = $event.target?.value)"
-            type="text"
-            id="gender"
-            name="gender"
-          />
-        </fieldset>
-        <fieldset class="field">
-          <label for="pronoun">Pronombre</label>
-          <input
-            @change="($event) => (pronoun = $event.target?.value)"
-            type="text"
-            id="pronoun"
-            name="pronoun"
-          />
-        </fieldset>
-        <fieldset class="field">
-          <label for="height">Estatura</label>
-          <input
-            @change="($event) => (height = $event.target?.value)"
-            type="number"
-            id="height"
-            name="height"
-          />
-        </fieldset>
-        <fieldset class="field">
-          <label for="weight">Peso</label>
-          <input
-            @change="($event) => (weight = $event.target?.value)"
-            type="number"
-            id="weight"
-            name="weight"
-          />
-        </fieldset>
-        <fieldset class="field">
-          <label for="age">Edad</label>
-          <input
-            @change="($event) => (age = $event.target?.value)"
-            type="number"
-            id="age"
-            name="age"
-          />
-        </fieldset>
-        <fieldset class="field">
-          <label for="rol">Rol</label>
-          <input
-            @change="($event) => (rol = $event.target?.value)"
-            type="text"
-            id="rol"
-            name="rol"
-          />
-        </fieldset>
-        <fieldset class="field">
-          <label for="ethnicity">Etnia</label>
-          <input
-            @change="($event) => (ethnicity = $event.target?.value)"
-            type="text"
-            id="ethnicity"
-            name="ethnicity"
-          />
-        </fieldset>
-        <fieldset class="field">
-          <label for="rel_status">Estado Civil</label>
-          <input
-            @change="($event) => (rel_status = $event.target?.value)"
-            type="text"
-            id="rel_status"
-            name="rel_status"
-          />
-        </fieldset>
-        <fieldset class="field">
-          <label for="search">Busca</label>
-          <input
-            @change="($event) => search.push($event.target?.value)"
-            type="text"
-            id="search"
-            name="search"
-          />
-        </fieldset>
-        <fieldset class="field">
-          <label for="encounter">Encuentro</label>
-          <input
-            @change="($event) => encounter.push($event.target?.value)"
-            type="text"
-            id="encounter"
-            name="encounter"
-          />
-        </fieldset>
-        <fieldset class="field">
-          <label for="vaccines">Vacunas</label>
-          <input
-            @change="($event) => vaccines.push($event.target?.value)"
-            type="text"
-            id="vaccines"
-            name="vaccines"
-          />
-        </fieldset>
-        <fieldset class="field">
-          <label for="vih">VIH</label>
-          <input
-            @change="($event) => (vih = $event.target?.value)"
-            type="text"
-            id="vih"
-            name="vih"
-          />
-        </fieldset>
-        <fieldset class="field">
-          <label for="prep">PrEP</label>
-          <input
-            @change="($event) => (prep = $event.target?.value)"
-            type="text"
-            id="prep"
-            name="prep"
-          />
-        </fieldset>
-        <fieldset class="field">
-          <label for="tags">Tags</label>
-          <input
-            @change="($event) => tags.push($event.target?.value)"
-            type="text"
-            id="tags"
-            name="tags"
-          />
-        </fieldset>
-        <button @click="createUser" class="btn-sendForm">Crear Usuario</button>
-      </div>
-    </form>
-  </main>
+    <main class="view">
+
+        <!-- ── LOGIN ──────────────────────────────────────── -->
+        <div v-if="!newUser" class="screen">
+            <div class="brand">
+                <Icon name="solar:fire-minimalistic-bold" size="44px" class="brand-icon" />
+                <h1 class="brand-name">Moledor</h1>
+            </div>
+
+            <form class="card" @submit.prevent="loginUser">
+                <fieldset class="field">
+                    <label for="login-name">Nombre de usuario</label>
+                    <input v-model="name" type="text" id="login-name" name="login-name" autocomplete="username"
+                        placeholder="Tu nombre" />
+                </fieldset>
+                <fieldset class="field">
+                    <label for="login-pass">Contraseña</label>
+                    <input v-model="pass" type="password" id="login-pass" name="login-pass"
+                        autocomplete="current-password" placeholder="••••••••" />
+                </fieldset>
+                <button type="submit" class="btn-primary">Iniciar sesión</button>
+                <button type="button" class="btn-ghost" @click="newUser = true">
+                    Crear cuenta
+                </button>
+            </form>
+        </div>
+
+        <!-- ── REGISTER STEP 1 ────────────────────────────── -->
+        <div v-else-if="!nameSend" class="screen">
+            <button class="back-btn" type="button" @click="newUser = false">
+                <Icon name="ion:caret-back" size="14px" /> Volver
+            </button>
+            <div class="brand">
+                <h1 class="brand-name">Crear cuenta</h1>
+                <p class="brand-sub">Elige tu nombre y contraseña</p>
+            </div>
+            <form class="card" @submit.prevent="nameSend = true">
+                <fieldset class="field">
+                    <label for="reg-name">Nombre de usuario</label>
+                    <input v-model="name" type="text" id="reg-name" name="name" autocomplete="username"
+                        placeholder="Tu nombre único" />
+                </fieldset>
+                <fieldset class="field">
+                    <label for="reg-pass">Contraseña</label>
+                    <input v-model="pass" type="password" id="reg-pass" name="pass" autocomplete="new-password"
+                        placeholder="••••••••" />
+                </fieldset>
+                <button type="submit" class="btn-primary">Continuar</button>
+            </form>
+        </div>
+
+        <!-- ── REGISTER STEP 2 ────────────────────────────── -->
+        <div v-else class="screen screen--profile">
+            <header class="profile-header">
+                <button class="back-btn" type="button" @click="nameSend = false">
+                    <Icon name="ion:caret-back" size="14px" /> Volver
+                </button>
+                <h1 class="brand-name">Tu perfil</h1>
+                <p class="brand-sub">Cuéntanos sobre ti (opcional)</p>
+            </header>
+
+            <form class="profile-grid" @submit.prevent="createUser">
+                <fieldset class="field">
+                    <label for="gender">Género</label>
+                    <input v-model="gender" type="text" id="gender" placeholder="Ej: Hombre" />
+                </fieldset>
+                <fieldset class="field">
+                    <label for="pronoun">Pronombre</label>
+                    <input v-model="pronoun" type="text" id="pronoun" placeholder="Ej: Él" />
+                </fieldset>
+                <fieldset class="field">
+                    <label for="height">Estatura (cm)</label>
+                    <input v-model="height" type="number" id="height" placeholder="Ej: 175" />
+                </fieldset>
+                <fieldset class="field">
+                    <label for="weight">Peso (kg)</label>
+                    <input v-model="weight" type="number" id="weight" placeholder="Ej: 70" />
+                </fieldset>
+                <fieldset class="field">
+                    <label for="age">Edad</label>
+                    <input v-model="age" type="number" id="age" placeholder="Ej: 25" />
+                </fieldset>
+                <fieldset class="field">
+                    <label for="rol">Rol</label>
+                    <input v-model="rol" type="text" id="rol" placeholder="Activo / Pasivo…" />
+                </fieldset>
+                <fieldset class="field">
+                    <label for="ethnicity">Etnia</label>
+                    <input v-model="ethnicity" type="text" id="ethnicity" placeholder="Ej: Latino" />
+                </fieldset>
+                <fieldset class="field">
+                    <label for="rel_status">Estado civil</label>
+                    <input v-model="rel_status" type="text" id="rel_status" placeholder="Ej: Soltero" />
+                </fieldset>
+                <fieldset class="field">
+                    <label for="search">Busca</label>
+                    <input type="text" id="search" placeholder="Ej: Amistad"
+                        @change="($event) => search.push(($event.target as HTMLInputElement).value)" />
+                </fieldset>
+                <fieldset class="field">
+                    <label for="encounter">Encuentro</label>
+                    <input type="text" id="encounter" placeholder="Ej: Mi lugar"
+                        @change="($event) => encounter.push(($event.target as HTMLInputElement).value)" />
+                </fieldset>
+                <fieldset class="field">
+                    <label for="vaccines">Vacunas</label>
+                    <input type="text" id="vaccines" placeholder="Ej: COVID-19"
+                        @change="($event) => vaccines.push(($event.target as HTMLInputElement).value)" />
+                </fieldset>
+                <fieldset class="field">
+                    <label for="vih">VIH</label>
+                    <input v-model="vih" type="text" id="vih" placeholder="Negativo / Positivo…" />
+                </fieldset>
+                <fieldset class="field">
+                    <label for="prep">PrEP</label>
+                    <input v-model="prep" type="text" id="prep" placeholder="Sí / No" />
+                </fieldset>
+                <fieldset class="field">
+                    <label for="tags">Tags</label>
+                    <input type="text" id="tags" placeholder="Ej: amigos, cruising…"
+                        @change="($event) => tags.push(($event.target as HTMLInputElement).value)" />
+                </fieldset>
+
+                <div class="submit-row">
+                    <button type="submit" class="btn-primary">Crear perfil</button>
+                </div>
+            </form>
+        </div>
+
+    </main>
 </template>
 
 <style scoped>
+/* ── Base ─────────────────────────────────────────────── */
 .view {
-  height: 100vh;
+    min-height: 100vh;
+    background: var(--black);
+    color: var(--white);
+    overflow-y: auto;
 }
-form {
-  height: 100%;
+
+/* ── Screens ──────────────────────────────────────────── */
+.screen {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+    gap: 32px;
 }
-.form {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+
+.screen--profile {
+    justify-content: flex-start;
+    padding-top: 28px;
+    padding-bottom: 56px;
+    gap: 0;
 }
-input {
-  font-size: 16px;
+
+/* ── Brand ────────────────────────────────────────────── */
+.brand {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
 }
-.form.user-info {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 6em 6em 6em 6em 6em;
-  align-content: center;
+
+.brand-icon {
+    color: var(--yellow);
+    filter: drop-shadow(0 0 14px rgba(255, 188, 66, 0.45));
 }
+
+.brand-name {
+    font-size: 2.2rem;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    color: var(--white);
+    margin: 0;
+}
+
+.brand-sub {
+    font-size: 0.88rem;
+    color: var(--gray);
+    margin: 0;
+}
+
+/* ── Login / step-1 card ──────────────────────────────── */
+.card {
+    width: 100%;
+    max-width: 360px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+/* ── Fields ───────────────────────────────────────────── */
 .field {
-  padding: 4px;
-  text-align: center;
-  vertical-align: center;
-  border: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 }
+
 .field label {
-  font-weight: 500;
-  font-size: 1.2em;
-  display: block;
-  margin-bottom: 6px;
-  color: var(--color-yellow);
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--yellow);
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
 }
-.field input,
-.field input:active,
+
+.field input {
+    background: var(--black-soft);
+    border: 1px solid rgba(255, 188, 66, 0.25);
+    border-radius: 12px;
+    color: var(--white-soft);
+    font-size: 15px;
+    height: 48px;
+    padding: 0 14px;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    -webkit-appearance: none;
+}
+
 .field input:focus {
-  text-align: center;
-  color: var(--color-white-soft);
-  background-color: var(--color-black);
-  border: 1px solid var(--color-yellow);
-  border-radius: 15px;
-  box-shadow: none;
-  height: 2.5em;
-  width: 45vw;
-  -webkit-box-shadow: none;
-  outline: none;
+    border-color: var(--yellow);
+    box-shadow: 0 0 0 3px rgba(255, 188, 66, 0.12);
 }
-.btn-sendForm {
-  grid-column: 1/3;
-  background-color: var(--color-yellow);
-  box-shadow: none;
-  color: var(--black);
-  font-size: 0.9em;
-  font-weight: 800;
-  border-style: hidden;
-  border-radius: 30px;
-  height: 3em;
-  width: 150px;
-  margin: 1.2em auto;
+
+.field input::placeholder {
+    color: var(--gray);
+    opacity: 0.6;
 }
-.link-register {
-  grid-column: 1/3;
-  background-color: var(--color-white);
-  box-shadow: none;
-  color: var(--color-black);
-  font-size: 0.9em;
-  font-weight: 800;
-  border-style: hidden;
-  border-radius: 30px;
-  height: 3em;
-  width: 150px;
+
+/* ── Buttons ──────────────────────────────────────────── */
+.btn-primary {
+    width: 100%;
+    height: 50px;
+    border: none;
+    border-radius: 14px;
+    background: var(--yellow);
+    color: var(--black);
+    font-size: 1rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: opacity 0.15s ease, transform 0.08s ease;
+    -webkit-appearance: none;
+}
+
+.btn-primary:hover {
+    opacity: 0.88;
+}
+
+.btn-primary:active {
+    transform: translateY(1px);
+    opacity: 0.8;
+}
+
+.btn-ghost {
+    width: 100%;
+    height: 50px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 14px;
+    background: transparent;
+    color: var(--white);
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+    -webkit-appearance: none;
+}
+
+.btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+/* ── Back button ──────────────────────────────────────── */
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: transparent;
+    border: none;
+    color: var(--gray);
+    font-size: 0.88rem;
+    cursor: pointer;
+    padding: 4px 0;
+    align-self: flex-start;
+    transition: color 0.15s ease;
+}
+
+.back-btn:hover {
+    color: var(--white);
+}
+
+/* ── Step-2 header ────────────────────────────────────── */
+.profile-header {
+    width: 100%;
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 24px;
+}
+
+.profile-header .brand-name {
+    font-size: 1.6rem;
+    margin-top: 6px;
+}
+
+/* ── Profile grid ─────────────────────────────────────── */
+.profile-grid {
+    width: 100%;
+    max-width: 500px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 14px;
+}
+
+.profile-grid .field input {
+    height: 44px;
+    font-size: 14px;
+}
+
+.submit-row {
+    grid-column: 1 / 3;
+    padding-top: 8px;
 }
 </style>

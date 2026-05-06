@@ -34,6 +34,7 @@ onBeforeMount(async () => {
   sound = new Audio(notification);
   state.messages = await $fetch(`/api/messages/${chatId}`);
   socket.connect();
+  socket.emit("join", currentUser.value?._id);
 });
 
 onMounted(() => {
@@ -59,7 +60,8 @@ watch(
 );
 
 onUnmounted(() => {
-  socket.disconnect();
+  socket.off("message");
+  socket.off("new-message");
 });
 
 // Helpers
