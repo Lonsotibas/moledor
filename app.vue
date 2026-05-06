@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { socket } from "~/components/socket.ts";
 
-const { currentUser } = useUserData();
+const { currentUser, setUserData } = useUserData();
 const showMenu = ref(false);
 const route = useRoute();
 const { increment, nameFor, photoFor } = useUnread();
@@ -30,7 +30,22 @@ const onGlobalMessage = (msg: any) => {
     : msg.mediaType === "audio" ? "Audio 🎵"
     : msg.message ?? "";
 
-  showNotif(msg.chatId, name, text, photoFor(msg.chatId));
+  showNotif(`/chat/${msg.chatId}`, name, text, photoFor(msg.chatId));
+
+  if (
+    "Notification" in window &&
+    Notification.permission === "granted" &&
+    document.visibilityState !== "visible"
+  ) {
+    new Notification(name, { body: text });
+  }
+};
+
+const onFireEvent = (data: any) => {
+  if (!data) return;
+  const name = data.fromName ?? "Alguien";
+  const text = data.isMutual ? "🔥 ¡Es un match!" : "🔥 Te ha dado fuego";
+  showNotif("/fires", name, text, data.fromPhoto ?? null);
 
   if (
     "Notification" in window &&
@@ -48,15 +63,14 @@ onMounted(() => {
   joinRoom();
   socket.on("connect", joinRoom);
   socket.on("message", onGlobalMessage);
+  socket.on("fire", onFireEvent);
 
-  if ("Notification" in window && Notification.permission === "default") {
-    Notification.requestPermission();
-  }
 });
 
 onUnmounted(() => {
   socket.off("connect", joinRoom);
   socket.off("message", onGlobalMessage);
+  socket.off("fire", onFireEvent);
 });
 </script>
 
@@ -71,5 +85,6 @@ onUnmounted(() => {
     />
     <Menu v-if="showMenu" />
     <NotifBanner />
+    <PermissionsModal v-if="currentUser" />
   </div>
 </template>

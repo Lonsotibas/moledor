@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { socket } from "~/components/socket.ts";
+
 const props = defineProps<{
   user: any;
   userImg?: string;
@@ -9,11 +11,50 @@ const emit = defineEmits<{
   (e: "closed"): void;
 }>();
 
-const { currentUser } = useUserData();
+const { currentUser, setUserData } = useUserData();
 
 const chatId = ref<string>("");
 const pending = ref(false);
 const errorMsg = ref<string>("");
+
+const firingPending = ref(false);
+const showMatch = ref(false);
+
+const hasFired = computed(() =>
+  (currentUser.value as any)?.fires?.some(
+    (f: any) => (f.userId?._id ?? f.userId) === props.user?._id
+  ) ?? false
+);
+
+async function toggleFire() {
+  if (firingPending.value) return;
+  firingPending.value = true;
+  try {
+    const res = await $fetch<{ fired: boolean; isMutual: boolean; user: any }>(
+      "/api/user/fire",
+      {
+        method: "post",
+        body: { userId: currentUser.value?._id, otherUserId: props.user._id },
+      }
+    );
+    setUserData(res.user);
+    if (res.fired) {
+      socket.emit("fire", {
+        toUserId: props.user._id,
+        fromUserId: currentUser.value?._id,
+        fromName: currentUser.value?.nombre,
+        fromPhoto: (currentUser.value as any)?.photos?.[0] ?? null,
+        isMutual: res.isMutual,
+      });
+      if (res.isMutual) {
+        showMatch.value = true;
+        setTimeout(() => (showMatch.value = false), 3000);
+      }
+    }
+  } finally {
+    firingPending.value = false;
+  }
+}
 
 const titleId = computed(
   () => `user-modal-title-${props.user?._id ?? "unknown"}`
@@ -91,11 +132,19 @@ async function openOrCreateChat() {
 
             <!-- Top bar -->
             <div class="top-bar">
-              <Icon
-                name="solar:fire-minimalistic-bold"
-                size="22px"
-                class="brand-icon"
-              />
+              <button
+                class="icon-btn fire-toggle"
+                :class="{ fired: hasFired }"
+                type="button"
+                :aria-label="hasFired ? 'Quitar fuego' : 'Dar fuego'"
+                :disabled="firingPending"
+                @click="toggleFire"
+              >
+                <Icon
+                  :name="hasFired ? 'solar:fire-minimalistic-bold' : 'solar:fire-minimalistic-outline'"
+                  size="22px"
+                />
+              </button>
               <div class="top-actions">
                 <button class="icon-btn" type="button" aria-label="Bloquear">
                   <Icon size="20px" name="ri:prohibited-2-line" />
@@ -110,6 +159,15 @@ async function openOrCreateChat() {
                 </button>
               </div>
             </div>
+
+            <!-- Match overlay -->
+            <Transition name="match-pop">
+              <div v-if="showMatch" class="match-overlay">
+                <Icon name="solar:fire-minimalistic-bold" size="40px" class="match-icon" />
+                <p class="match-text">¡Es un match!</p>
+                <p class="match-sub">{{ user?.nombre }} también te dio fuego 🔥</p>
+              </div>
+            </Transition>
 
             <!-- Identity overlay at photo bottom -->
             <div class="hero-footer">
@@ -292,9 +350,61 @@ async function openOrCreateChat() {
   background: linear-gradient(to bottom, rgba(0, 0, 0, 0.65), transparent);
 }
 
-.brand-icon {
-  color: var(--yellow);
-  filter: drop-shadow(0 0 6px rgba(255, 188, 66, 0.5));
+.fire-toggle {
+  color: rgba(255, 255, 255, 0.7);
+  transition: color 0.15s, transform 0.1s;
+}
+.fire-toggle.fired {
+  color: var(--yellow, #ffbc42);
+  filter: drop-shadow(0 0 8px rgba(255, 188, 66, 0.6));
+}
+.fire-toggle:active {
+  transform: scale(0.88);
+}
+.fire-toggle:disabled {
+  opacity: 0.5;
+}
+
+.match-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.82);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  z-index: 10;
+}
+.match-icon {
+  color: var(--yellow, #ffbc42);
+  filter: drop-shadow(0 0 16px rgba(255, 188, 66, 0.8));
+  animation: flame-pulse 0.6s ease infinite alternate;
+}
+@keyframes flame-pulse {
+  from { transform: scale(1); }
+  to { transform: scale(1.15); }
+}
+.match-text {
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: var(--yellow, #ffbc42);
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+.match-sub {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.75);
+  margin: 0;
+}
+.match-pop-enter-active,
+.match-pop-leave-active {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.match-pop-enter-from,
+.match-pop-leave-to {
+  opacity: 0;
+  transform: scale(1.04);
 }
 
 .top-actions {

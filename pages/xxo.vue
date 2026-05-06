@@ -1,4 +1,6 @@
 <script setup lang="ts">
+const emit = defineEmits<{ (e: "showMenu", value: boolean): void }>();
+
 import fitoUrl from "../assets/models/Afirmaoo_el_fito_textured_mesh_medpoly_glb.glb?url";
 import patitasUrl from "../assets/models/Patitas_arriba_textured_mesh_medpoly_glb.glb?url";
 import pictoreskaUrl from "../assets/models/Pictoresca_textured_mesh_medpoly_glb.glb?url";
@@ -29,6 +31,7 @@ const modelScale   = ref(1);
 const previewMode  = ref(false); // false = world; true = single-model inspect
 
 // ── Imperative DOM refs ───────────────────────────────────────────────────────
+let mediaStream:     MediaStream | null = null;
 let videoEl:         HTMLVideoElement | null = null;
 let aScene:          HTMLElement | null = null;
 let aCam:            HTMLElement | null = null;
@@ -76,6 +79,7 @@ async function startCamera() {
       width: "100%", height: "100%",
       objectFit: "cover", zIndex: "1", background: "#000",
     });
+    mediaStream = stream;
     videoEl.srcObject = stream;
     document.body.appendChild(videoEl);
     try { await videoEl.play(); } catch { /* muted+playsinline allows autoplay */ }
@@ -254,6 +258,8 @@ async function grantOrientPerm() {
 
 // ── Lifecycle ─────────────────────────────────────────────────────────────────
 onMounted(() => {
+  emit("showMenu", false);
+
   if (!window.isSecureContext) { overlay.value = "https-error"; return; }
 
   document.addEventListener("touchstart", onTouchStart, { passive: true });
@@ -267,14 +273,17 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  emit("showMenu", true);
+
   if (sceneReadyTimer) { clearTimeout(sceneReadyTimer); sceneReadyTimer = null; }
   if (camAnimFrame !== null) { cancelAnimationFrame(camAnimFrame); camAnimFrame = null; }
   document.removeEventListener("touchstart", onTouchStart);
   document.removeEventListener("touchmove",  onTouchMove);
-  if (videoEl) {
-    (videoEl.srcObject as MediaStream | null)?.getTracks().forEach((t) => t.stop());
-    videoEl.remove(); videoEl = null;
-  }
+
+  mediaStream?.getTracks().forEach((t) => t.stop());
+  mediaStream = null;
+  if (videoEl) { videoEl.srcObject = null; videoEl.remove(); videoEl = null; }
+
   if (aScene) { (aScene as any).exitVR?.(); aScene.remove(); aScene = null; }
   worldEntities.clear();
 });

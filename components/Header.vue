@@ -124,7 +124,9 @@ function onKeydownMenu(e: KeyboardEvent) {
 
     <!-- Acciones a la derecha -->
     <div class="actions">
-      <Icon size="22px" name="solar:fire-minimalistic-bold" />
+      <button class="fire-btn" aria-label="Ver fuegos" @click="navigateTo('/fires')">
+        <Icon size="22px" name="solar:fire-minimalistic-bold" />
+      </button>
       <slot name="actions" />
     </div>
 
@@ -279,6 +281,20 @@ function onKeydownMenu(e: KeyboardEvent) {
   display: inline-flex;
   gap: 6px;
   color: var(--muted);
+}
+.fire-btn {
+  background: transparent;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  padding: 4px;
+  border-radius: 8px;
+  transition: opacity 0.15s;
+}
+.fire-btn:active {
+  opacity: 0.6;
 }
 
 .menu-backdrop {

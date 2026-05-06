@@ -28,6 +28,7 @@ const UserSchema = new Schema({
   ],
   photos: [String],
   blocked: [{ userId: { type: Schema.Types.ObjectId, ref: "User" } }],
+  fires: [{ userId: { type: Schema.Types.ObjectId, ref: "User" } }],
 });
 
 export const User = model("User", UserSchema);

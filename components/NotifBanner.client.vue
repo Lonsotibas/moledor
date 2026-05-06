@@ -2,9 +2,9 @@
 const { queue, dismiss } = useNotif();
 const router = useRouter();
 
-function open(chatId: string, id: number) {
+function open(to: string | null, id: number) {
   dismiss(id);
-  router.push({ name: "chat-id", params: { id: chatId } });
+  if (to) router.push(to);
 }
 </script>
 
@@ -15,7 +15,7 @@ function open(chatId: string, id: number) {
       :key="toast.id"
       class="notif"
       role="alert"
-      @click="open(toast.chatId, toast.id)"
+      @click="open(toast.to, toast.id)"
     >
       <div class="notif-icon">
         <img v-if="toast.photo" :src="toast.photo" class="notif-avatar" alt="" />

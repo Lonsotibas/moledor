@@ -31,6 +31,10 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
       if (value.senderId) io.to(value.senderId).emit("message", value);
     });
 
+    socket.on("fire", (data: any) => {
+      if (data.toUserId) io.to(data.toUserId).emit("fire", data);
+    });
+
     socket.on(
       "upload",
       (fileBuffer: ArrayBuffer, meta: any, callback: Function) => {

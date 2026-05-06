@@ -121,6 +121,49 @@ onUnmounted(() => {
   window.removeEventListener("keydown", onKeydown);
 });
 
+// Fire
+const firingPending = ref(false);
+const showMatchBanner = ref(false);
+
+const hasFired = computed(() =>
+  (currentUser.value as any)?.fires?.some(
+    (f: any) => (f.userId?._id ?? f.userId) === otherUser?.userId?._id
+  ) ?? false
+);
+
+async function toggleFire() {
+  if (firingPending.value) return;
+  firingPending.value = true;
+  try {
+    const res = await $fetch<{ fired: boolean; isMutual: boolean; user: any }>(
+      "/api/user/fire",
+      {
+        method: "post",
+        body: { userId: currentUser.value?._id, otherUserId: otherUser.userId._id },
+      }
+    );
+    setUserData(res.user);
+    if (res.fired) {
+      socket.emit("fire", {
+        toUserId: otherUser.userId._id,
+        fromUserId: currentUser.value?._id,
+        fromName: currentUser.value?.nombre,
+        fromPhoto: (currentUser.value as any)?.photos?.[0] ?? null,
+        isMutual: res.isMutual,
+      });
+      if (res.isMutual) {
+        showMatchBanner.value = true;
+        setTimeout(() => (showMatchBanner.value = false), 3000);
+      }
+    }
+  } finally {
+    firingPending.value = false;
+  }
+}
+
+// Modal
+const isModalVisible = ref(false);
+
 // Block
 const showBlockDialog = ref(false);
 const blocking = ref(false);
@@ -341,19 +384,39 @@ const sendImage = async (e: Event) => {
       <button class="icon-btn back" aria-label="Volver" @click="$router.back()">
         <Icon size="20px" name="ion:caret-back" />
       </button>
-      <div class="peer">
-        <span class="name" :title="otherUser?.userId?.nombre">
-          {{ otherUser?.userId?.nombre || "Chat" }}
-        </span>
-        <span class="status"> <span class="dot"></span> En línea </span>
-      </div>
+      <button class="peer" type="button" @click="isModalVisible = true">
+        <div class="peer-avatar">
+          <img
+            v-if="otherUser?.userId?.photos?.[0]"
+            :src="otherUser.userId.photos[0]"
+            :alt="otherUser?.userId?.nombre"
+            class="peer-avatar-img"
+          />
+          <Icon v-else name="solar:user-circle-bold" size="26px" class="peer-avatar-icon" />
+        </div>
+        <div class="peer-info">
+          <span class="name" :title="otherUser?.userId?.nombre">
+            {{ otherUser?.userId?.nombre || "Chat" }}
+          </span>
+          <span class="status"><span class="dot"></span> En línea</span>
+        </div>
+      </button>
 
       <div class="opts">
         <button class="icon-btn" aria-label="Bloquear" @click="showBlockDialog = true">
           <Icon size="24px" name="ri:prohibited-2-line" />
         </button>
-        <button class="icon-btn" aria-label="Fuego">
-          <Icon size="24px" name="solar:fire-minimalistic-outline" />
+        <button
+          class="icon-btn"
+          :class="{ fired: hasFired }"
+          :aria-label="hasFired ? 'Quitar fuego' : 'Dar fuego'"
+          :disabled="firingPending"
+          @click="toggleFire"
+        >
+          <Icon
+            size="24px"
+            :name="hasFired ? 'solar:fire-minimalistic-bold' : 'solar:fire-minimalistic-outline'"
+          />
         </button>
       </div>
     </header>
@@ -460,6 +523,14 @@ const sendImage = async (e: Event) => {
       </button>
     </Transition>
 
+    <!-- Match banner -->
+    <Transition name="match-pop">
+      <div v-if="showMatchBanner" class="match-banner">
+        <Icon name="solar:fire-minimalistic-bold" size="22px" class="match-banner-icon" />
+        <span>¡Es un match con {{ otherUser?.userId?.nombre }}! 🔥</span>
+      </div>
+    </Transition>
+
     <!-- Block dialog -->
     <Transition name="lb">
       <div v-if="showBlockDialog" class="lightbox dialog-backdrop" @click.self="showBlockDialog = false">
@@ -492,6 +563,14 @@ const sendImage = async (e: Event) => {
         />
       </div>
     </Transition>
+
+    <UserModal
+      v-if="isModalVisible"
+      :isVisible="isModalVisible"
+      :user="otherUser?.userId"
+      :userImg="otherUser?.userId?.photos?.[0] ?? null"
+      @closed="isModalVisible = false"
+    />
   </main>
 </template>
 
@@ -531,6 +610,7 @@ const sendImage = async (e: Event) => {
   backdrop-filter: blur(6px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
+
 .icon-btn {
   display: inline-grid;
   place-items: center;
@@ -550,9 +630,42 @@ const sendImage = async (e: Event) => {
 }
 
 .peer {
-  display: grid;
+  display: flex;
   align-items: center;
+  gap: 10px;
+  background: transparent;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  min-width: 0;
+  padding: 0;
+  border-radius: 10px;
+  transition: opacity 0.12s;
+}
+.peer:active { opacity: 0.7; }
+
+.peer-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: rgba(255, 188, 66, 0.12);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  color: var(--yellow, #ffbc42);
+}
+.peer-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.peer-info {
+  display: grid;
   line-height: 1.1;
+  min-width: 0;
 }
 .name {
   font-weight: 700;
@@ -789,6 +902,48 @@ const sendImage = async (e: Event) => {
     box-shadow: 0 0 0 14px rgba(255, 82, 82, 0);
     transform: scale(1.05);
   }
+}
+
+/* Fire */
+.icon-btn.fired {
+  color: var(--accent-1);
+}
+
+.match-banner {
+  position: absolute;
+  top: calc(70px + env(safe-area-inset-top));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #1c1b20;
+  border: 1px solid rgba(255, 188, 66, 0.35);
+  border-radius: 999px;
+  padding: 10px 18px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--accent-1);
+  white-space: nowrap;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+}
+.match-banner-icon {
+  color: var(--accent-1);
+  animation: flame-pulse 0.6s ease infinite alternate;
+}
+@keyframes flame-pulse {
+  from { transform: scale(1); }
+  to { transform: scale(1.2); }
+}
+.match-pop-enter-active,
+.match-pop-leave-active {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.match-pop-enter-from,
+.match-pop-leave-to {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-8px);
 }
 
 /* Block dialog */
