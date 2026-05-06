@@ -107,8 +107,7 @@ onBeforeMount(() => {
   grid-template-columns: repeat(3, 1fr);
   grid-auto-rows: calc((100vw - 12px) / 3);
   gap: 3px;
-  padding: 3px;
-  padding-bottom: calc(68px + env(safe-area-inset-bottom));
+  padding: 0 3px calc(68px + env(safe-area-inset-bottom)) 3px;
   align-content: start;
   scrollbar-width: none;
 }

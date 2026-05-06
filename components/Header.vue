@@ -57,6 +57,11 @@ const logout = () => {
   navigateTo("/");
 };
 
+const editProfile = () => {
+  closeMenu();
+  navigateTo("/config");
+};
+
 function focusNext(dir: 1 | -1) {
   const items = Array.from(
     menuRef.value?.querySelectorAll<HTMLElement>("[data-menuitem]") || []
@@ -96,7 +101,13 @@ function onKeydownMenu(e: KeyboardEvent) {
       aria-haspopup="menu"
       @click="isMenuOpen ? closeMenu() : openMenu()"
     >
-      <Icon class="avatar" size="28px" name="solar:user-circle-bold" />
+      <img
+        v-if="(currentUser as any)?.photos?.[0]"
+        :src="(currentUser as any).photos[0]"
+        alt="Foto de perfil"
+        class="avatar-photo"
+      />
+      <Icon v-else class="avatar" size="28px" name="solar:user-circle-bold" />
       <span class="status-dot" aria-hidden="true"></span>
       <span class="sr-only">Abrir menú de usuario</span>
     </button>
@@ -130,7 +141,13 @@ function onKeydownMenu(e: KeyboardEvent) {
         <div v-show="panel === 'root'" class="panel">
           <div class="user-card">
             <div class="uc-avatar">
-              <Icon size="28px" name="solar:user-circle-bold" />
+              <img
+                v-if="(currentUser as any)?.photos?.[0]"
+                :src="(currentUser as any).photos[0]"
+                alt="Foto de perfil"
+                class="uc-photo"
+              />
+              <Icon v-else size="28px" name="solar:user-circle-bold" />
             </div>
             <div class="uc-meta">
               <strong class="uc-name">{{
@@ -139,6 +156,18 @@ function onKeydownMenu(e: KeyboardEvent) {
               <span class="uc-sub">{{ currentUser?.email || "Cuenta" }}</span>
             </div>
           </div>
+
+          <hr class="sep" />
+
+          <button
+            class="menu-item"
+            role="menuitem"
+            data-menuitem
+            @click="editProfile"
+          >
+            <Icon name="solar:pen-2-bold-duotone" size="20px" />
+            <span>Editar perfil</span>
+          </button>
 
           <hr class="sep" />
 
@@ -158,31 +187,26 @@ function onKeydownMenu(e: KeyboardEvent) {
 </template>
 
 <style scoped>
-:root {
-  --header-h: 56px;
-  --surface: var(--black, #000);
-  --glass: rgba(0, 0, 0, 0.55);
-  --text: var(--white, #fff);
-  --muted: var(--white-mute, #a9a9a9);
-  --divider: rgba(255, 255, 255, 0.1);
-  --accent: var(--yellow, #ffd166);
-  --danger: #ff6b6b;
-  --radius: 14px;
-  --shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
-}
-
 .navbar {
+  --header-h: 56px;
+  --divider: rgba(255, 255, 255, 0.08);
+  --text: var(--white, #ecf8f8);
+  --muted: var(--gray, #949396);
+  --accent: var(--yellow, #ffbc42);
+  --danger: #ff6b6b;
+  --shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+
   position: fixed;
   inset-inline: 0;
   top: 0;
   height: calc(var(--header-h) + env(safe-area-inset-top));
   padding-top: env(safe-area-inset-top);
-  background: var(--black);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--black, #121113);
+  box-shadow: 0 1px 0 var(--divider);
   display: grid;
-  grid-template-columns: 56px 1fr 56px;
+  grid-template-columns: 52px 1fr 52px;
   align-items: center;
-  padding-inline: 10px;
+  padding-inline: 12px;
   color: var(--text);
   z-index: 1000;
 }
@@ -193,6 +217,7 @@ function onKeydownMenu(e: KeyboardEvent) {
   height: 40px;
   width: 40px;
   border-radius: 50%;
+  overflow: hidden;
   border: 1px solid var(--divider);
   background: radial-gradient(
     120% 120% at 30% 30%,
@@ -207,6 +232,12 @@ function onKeydownMenu(e: KeyboardEvent) {
 .avatar-btn:active {
   transform: translateY(1px);
 }
+.avatar-photo {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
 .status-dot {
   position: absolute;
   bottom: -2px;
@@ -215,23 +246,24 @@ function onKeydownMenu(e: KeyboardEvent) {
   height: 10px;
   border-radius: 50%;
   background: #42d17d;
-  box-shadow: 0 0 0 2px var(--surface);
+  box-shadow: 0 0 0 2px var(--black, #121113);
 }
 .brand {
   display: inline-grid;
-  grid-auto-flow: column;
   justify-content: center;
   align-items: center;
-  gap: 8px;
-  font-weight: 800;
 }
 .brand-name {
-  font-size: 1rem;
+  font-size: 1.05rem;
+  font-weight: 900;
+  letter-spacing: 0.4px;
+  color: var(--accent);
 }
 .actions {
   justify-self: end;
   display: inline-flex;
   gap: 6px;
+  color: var(--muted);
 }
 
 .menu-backdrop {
@@ -243,10 +275,10 @@ function onKeydownMenu(e: KeyboardEvent) {
 
 .submenu {
   position: fixed;
-  top: 40px;
-  left: 0px;
-  width: 280px;
-  background: var(--black);
+  top: calc(var(--header-h) + env(safe-area-inset-top) + 6px);
+  left: 10px;
+  width: 268px;
+  background: var(--black, #121113);
   backdrop-filter: blur(12px) saturate(115%);
   border: 1px solid var(--divider);
   border-radius: 14px;
@@ -282,6 +314,12 @@ function onKeydownMenu(e: KeyboardEvent) {
     rgba(255, 255, 255, 0.04)
   );
   border: 1px solid var(--divider);
+}
+.uc-photo {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
 }
 .uc-meta {
   min-width: 0;
@@ -403,7 +441,7 @@ function onKeydownMenu(e: KeyboardEvent) {
 .menu-pop-enter-active,
 .menu-pop-leave-active {
   transition: transform 0.18s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.18s ease;
-  transform-origin: top right;
+  transform-origin: top left;
 }
 .menu-pop-enter-from,
 .menu-pop-leave-to {

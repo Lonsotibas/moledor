@@ -80,7 +80,6 @@ const activeIndex = computed(() =>
                 :name="activeKey === it.key ? it.iconActive : it.icon"
                 size="26px"
               />
-              <span class="indicator" aria-hidden="true"></span>
             </span>
             <span class="label">{{ it.label }}</span>
           </NuxtLink>
@@ -153,23 +152,6 @@ footer.dock {
 
 .nav-item.active .icon {
   color: var(--yellow);
-}
-
-.indicator {
-  position: absolute;
-  bottom: -4px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--yellow);
-  opacity: 0;
-  transition: opacity 0.15s ease;
-}
-
-.nav-item.active .indicator {
-  opacity: 1;
 }
 
 .label {
