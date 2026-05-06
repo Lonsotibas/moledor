@@ -7,10 +7,8 @@ export default defineNuxtConfig({
       charset: "utf-16",
       viewport: "width=device-width, initial-scale=1, maximum-scale=1",
       script: [
-        { src: "https://aframe.io/releases/1.0.4/aframe.min.js" },
-        {
-          src: "https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js",
-        },
+        { src: "/js/aframe.min.js" },
+        { src: "/js/aframe-ar.js" },
       ],
     },
   },
@@ -38,8 +36,9 @@ export default defineNuxtConfig({
     "/xxo/**": { ssr: false },
   },
   vue: {
-    config: {
-      ignoredElements: ["a-scene", "a-camera", "a-box", "a-entity"],
+    compilerOptions: {
+      // Tell Vue 3 to leave A-Frame custom elements alone
+      isCustomElement: (tag) => tag.startsWith("a-"),
     },
   },
   vite: {
