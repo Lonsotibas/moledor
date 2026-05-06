@@ -1,5 +1,6 @@
 import { now } from "mongoose";
 import { Message } from "~/server/models/message.model";
+import { Chat } from "~/server/models/chat.model";
 
 export default defineEventHandler(async (event) => {
   try {
@@ -13,7 +14,16 @@ export default defineEventHandler(async (event) => {
       chatId: body.chatId,
       createdAt: now(),
     });
-    return await message.save();
+    const saved = await message.save();
+
+    if (body.chatId && body.receiverId) {
+      await Chat.updateOne(
+        { _id: body.chatId, "users.userId": body.receiverId },
+        { $inc: { "users.$.totalUnread": 1 } }
+      );
+    }
+
+    return saved;
   } catch {
     throw createError({ statusCode: 500, message: "Error del servidor" });
   }

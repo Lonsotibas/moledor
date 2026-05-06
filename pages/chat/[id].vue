@@ -47,7 +47,7 @@ function stopTimer() {
 }
 const chatId = route.params.id as string;
 const chat = await $fetch(`/api/chat/${chatId}`);
-const { currentUser } = useUserData();
+const { currentUser, setUserData } = useUserData();
 const otherUser = chat.users?.find(
   (value: any) => value.userId._id !== currentUser.value?._id
 );
@@ -74,11 +74,19 @@ function onChatScroll() {
   showScrollBtn.value = scrollHeight - scrollTop - clientHeight > 120;
 }
 
+const { clear: clearUnread } = useUnread();
+
 onBeforeMount(async () => {
   sound = new Audio(notification);
   state.messages = await $fetch(`/api/messages/${chatId}`);
   socket.connect();
   socket.emit("join", currentUser.value?._id);
+
+  clearUnread(chatId);
+  $fetch("/api/chat/read", {
+    method: "patch",
+    body: { chatId, userId: currentUser.value?._id },
+  }).catch(() => {});
 });
 
 const onSocketConnect = () => {
@@ -112,6 +120,28 @@ onUnmounted(() => {
   socket.off("new-message", onSocketMessage);
   window.removeEventListener("keydown", onKeydown);
 });
+
+// Block
+const showBlockDialog = ref(false);
+const blocking = ref(false);
+
+async function blockUser() {
+  blocking.value = true;
+  try {
+    const updated = await $fetch("/api/user/block", {
+      method: "patch",
+      body: {
+        userId: currentUser.value?._id,
+        otherUserId: otherUser.userId._id,
+      },
+    });
+    setUserData(updated as any);
+    navigateTo("/chats");
+  } finally {
+    blocking.value = false;
+    showBlockDialog.value = false;
+  }
+}
 
 // Helpers
 const isMine = (msg: any) => msg.senderId === currentUser.value?._id;
@@ -319,7 +349,7 @@ const sendImage = async (e: Event) => {
       </div>
 
       <div class="opts">
-        <button class="icon-btn" aria-label="Bloquear">
+        <button class="icon-btn" aria-label="Bloquear" @click="showBlockDialog = true">
           <Icon size="24px" name="ri:prohibited-2-line" />
         </button>
         <button class="icon-btn" aria-label="Fuego">
@@ -428,6 +458,22 @@ const sendImage = async (e: Event) => {
       >
         <Icon name="solar:alt-arrow-down-bold" size="20px" />
       </button>
+    </Transition>
+
+    <!-- Block dialog -->
+    <Transition name="lb">
+      <div v-if="showBlockDialog" class="lightbox dialog-backdrop" @click.self="showBlockDialog = false">
+        <div class="block-dialog">
+          <p class="block-title">¿Bloquear a {{ otherUser?.userId?.nombre }}?</p>
+          <p class="block-sub">Ya no podrán verse ni enviarse mensajes.</p>
+          <div class="block-actions">
+            <button class="block-cancel" @click="showBlockDialog = false">Cancelar</button>
+            <button class="block-confirm" :disabled="blocking" @click="blockUser">
+              {{ blocking ? "Bloqueando…" : "Bloquear" }}
+            </button>
+          </div>
+        </div>
+      </div>
     </Transition>
 
     <!-- Lightbox -->
@@ -743,6 +789,62 @@ const sendImage = async (e: Event) => {
     box-shadow: 0 0 0 14px rgba(255, 82, 82, 0);
     transform: scale(1.05);
   }
+}
+
+/* Block dialog */
+.dialog-backdrop {
+  align-items: center;
+  padding: 24px;
+}
+.block-dialog {
+  background: var(--surface-2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  padding: 24px 20px 16px;
+  width: 100%;
+  max-width: 320px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+}
+.block-title {
+  font-weight: 800;
+  font-size: 1.05rem;
+  margin: 0 0 8px;
+  text-align: center;
+}
+.block-sub {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.88rem;
+  margin: 0 0 20px;
+  text-align: center;
+  line-height: 1.4;
+}
+.block-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.block-cancel,
+.block-confirm {
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.15s;
+}
+.block-cancel {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+}
+.block-confirm {
+  background: #ff4444;
+  color: #fff;
+}
+.block-confirm:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 /* Scroll to bottom button */

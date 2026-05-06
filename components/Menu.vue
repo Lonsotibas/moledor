@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const route = useRoute();
+const { total: totalUnread } = useUnread();
 
 const itemPressed = ref<"index" | "chat" | "virtual">("index");
 
@@ -80,6 +81,11 @@ const activeIndex = computed(() =>
                 :name="activeKey === it.key ? it.iconActive : it.icon"
                 size="26px"
               />
+              <span
+                v-if="it.key === 'chat' && totalUnread > 0"
+                class="unread-dot"
+                :class="{ wide: totalUnread > 9 }"
+              >{{ totalUnread > 99 ? "99+" : totalUnread }}</span>
             </span>
             <span class="label">{{ it.label }}</span>
           </NuxtLink>
@@ -143,6 +149,23 @@ footer.dock {
   place-items: center;
   width: 28px;
   height: 28px;
+}
+.unread-dot {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--yellow, #ffbc42);
+  color: #000;
+  font-size: 0.6rem;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+  line-height: 1;
+  border: 1.5px solid var(--black, #121113);
 }
 
 .icon {

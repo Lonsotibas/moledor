@@ -16,14 +16,11 @@ const emit = defineEmits<{
 const { currentUser } = useUserData();
 
 const { data: usersData } = await useFetch("/api/users", {
+  query: { userId: currentUser.value?._id },
   default: () => [],
 });
 
-const users = computed(() => {
-  const list = usersData.value ?? [];
-  const me = currentUser.value?._id;
-  return me ? list.filter((u) => u._id !== me) : list;
-});
+const users = computed(() => usersData.value ?? []);
 
 function imageFor(user, idx: number) {
   const first = user.photos?.[0];

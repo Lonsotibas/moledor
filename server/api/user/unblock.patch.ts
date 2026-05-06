@@ -5,7 +5,7 @@ export default defineEventHandler(async (event) => {
     const body = await readBody(event);
     const user = await User.findByIdAndUpdate(
       body.userId,
-      { $push: { blocked: { userId: body.otherUserId } } },
+      { $pull: { blocked: { userId: body.otherUserId } } },
       { new: true }
     ).select("-pass");
     return user;

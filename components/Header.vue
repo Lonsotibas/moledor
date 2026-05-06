@@ -62,6 +62,11 @@ const editProfile = () => {
   navigateTo("/config");
 };
 
+const goToBlocked = () => {
+  closeMenu();
+  navigateTo("/blocked");
+};
+
 function focusNext(dir: 1 | -1) {
   const items = Array.from(
     menuRef.value?.querySelectorAll<HTMLElement>("[data-menuitem]") || []
@@ -167,6 +172,16 @@ function onKeydownMenu(e: KeyboardEvent) {
           >
             <Icon name="solar:pen-2-bold-duotone" size="20px" />
             <span>Editar perfil</span>
+          </button>
+
+          <button
+            class="menu-item"
+            role="menuitem"
+            data-menuitem
+            @click="goToBlocked"
+          >
+            <Icon name="solar:user-block-rounded-bold-duotone" size="20px" />
+            <span>Bloqueados</span>
           </button>
 
           <hr class="sep" />
