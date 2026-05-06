@@ -12,9 +12,39 @@ const triggerFileInput = () => fileInput.value?.click();
 
 let sound: HTMLAudioElement;
 let recorder: MediaRecorder | null = null;
+let stream: MediaStream | null = null;
 let chunks: Array<BlobPart> = [];
 
+function getAudioMimeType() {
+  const types = [
+    "audio/webm;codecs=opus",
+    "audio/webm",
+    "audio/mp4",
+    "audio/ogg;codecs=opus",
+    "audio/ogg",
+  ];
+  return types.find((t) => MediaRecorder.isTypeSupported(t)) ?? "";
+}
+
 const isRecording = ref(false);
+const recordingTime = ref(0);
+let recordingTimer: ReturnType<typeof setInterval> | null = null;
+
+function fmtRecTime(s: number) {
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  return `${m}:${sec.toString().padStart(2, "0")}`;
+}
+
+function startTimer() {
+  stopTimer();
+  recordingTime.value = 0;
+  recordingTimer = setInterval(() => recordingTime.value++, 1000);
+}
+
+function stopTimer() {
+  if (recordingTimer) { clearInterval(recordingTimer); recordingTimer = null; }
+}
 const chatId = route.params.id as string;
 const chat = await $fetch(`/api/chat/${chatId}`);
 const { currentUser } = useUserData();
@@ -22,12 +52,26 @@ const otherUser = chat.users?.find(
   (value: any) => value.userId._id !== currentUser.value?._id
 );
 
-const messagesEnd = ref<HTMLDivElement | null>(null);
+const chatBody = ref<HTMLElement | null>(null);
+const lightboxSrc = ref<string | null>(null);
+const showScrollBtn = ref(false);
+
+function onKeydown(e: KeyboardEvent) {
+  if (e.key === "Escape") lightboxSrc.value = null;
+}
 
 function scrollToBottom() {
   requestAnimationFrame(() => {
-    messagesEnd.value?.scrollIntoView({ block: "end", behavior: "smooth" });
+    if (chatBody.value) {
+      chatBody.value.scrollTop = chatBody.value.scrollHeight;
+    }
   });
+}
+
+function onChatScroll() {
+  if (!chatBody.value) return;
+  const { scrollTop, scrollHeight, clientHeight } = chatBody.value;
+  showScrollBtn.value = scrollHeight - scrollTop - clientHeight > 120;
 }
 
 onBeforeMount(async () => {
@@ -37,21 +81,24 @@ onBeforeMount(async () => {
   socket.emit("join", currentUser.value?._id);
 });
 
+const onSocketConnect = () => {
+  socket.emit("join", currentUser.value?._id);
+};
+
+const onSocketMessage = (value: any) => {
+  state.messages.push(value);
+  if (value.senderId !== currentUser.value?._id) sound.play();
+  scrollToBottom();
+};
+
 onMounted(() => {
   emit("showMenu", false);
   scrollToBottom();
+  window.addEventListener("keydown", onKeydown);
 
-  socket.on("message", (value) => {
-    state.messages.push(value);
-    sound.play();
-    scrollToBottom();
-  });
-
-  socket.on("new-message", (msg) => {
-    state.messages.push(msg);
-    sound.play();
-    scrollToBottom();
-  });
+  socket.on("connect", onSocketConnect);
+  socket.on("message", onSocketMessage);
+  socket.on("new-message", onSocketMessage);
 });
 
 watch(
@@ -60,8 +107,10 @@ watch(
 );
 
 onUnmounted(() => {
-  socket.off("message");
-  socket.off("new-message");
+  socket.off("connect", onSocketConnect);
+  socket.off("message", onSocketMessage);
+  socket.off("new-message", onSocketMessage);
+  window.removeEventListener("keydown", onKeydown);
 });
 
 // Helpers
@@ -82,7 +131,7 @@ const sendMsg = async () => {
     body: {
       message: text,
       senderId: currentUser.value?._id,
-      receiverId: otherUser._id,
+      receiverId: otherUser.userId._id,
       chatId,
     },
   });
@@ -99,64 +148,91 @@ const sendMsg = async () => {
 
 // Audio
 // Captura Audio
-const captureAudio = async () => {
+const captureAudio = async (e: PointerEvent) => {
+  e.preventDefault();
+  if (isRecording.value) return;
+  (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
   try {
     chunks = [];
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    recorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
-    recorder.ondataavailable = (e) => chunks.push(e.data);
-    recorder.start();
+    stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const mimeType = getAudioMimeType();
+    recorder = new MediaRecorder(stream, mimeType ? { mimeType } : {});
+    recorder.ondataavailable = (ev) => { if (ev.data.size > 0) chunks.push(ev.data); };
+    recorder.start(100); // collect a chunk every 100 ms
     isRecording.value = true;
+    startTimer();
   } catch {
     isRecording.value = false;
   }
 };
+// Cancela Audio
+const cancelAudio = () => {
+  stopTimer();
+  stream?.getTracks().forEach((t) => t.stop());
+  stream = null;
+  if (recorder) {
+    try { recorder.stop(); } catch {}
+    recorder = null;
+  }
+  isRecording.value = false;
+  chunks = [];
+};
 // Envia Audio
 const sendAudio = () => {
   if (!recorder) return;
-  try {
-    recorder.stop();
-    recorder.addEventListener("stop", async () => {
-      isRecording.value = false;
-      const audioBlob = new Blob(chunks, { type: "audio/webm" });
-      const arrayBuffer = await audioBlob.arrayBuffer();
+  stopTimer();
+  const rec = recorder;
+  const currentStream = stream;
+  recorder = null;
+  stream = null;
 
-      socket.emit(
-        "upload",
-        arrayBuffer,
-        {
-          type: "audio",
-          mimeType: audioBlob.type,
-          senderId: currentUser.value?._id,
-          receiverId: otherUser._id,
-          chatId,
-        },
-        async (res: any) => {
-          if (res.success) {
-            await $fetch("/api/message", {
-              method: "post",
-              body: {
-                mediaUrl: res.url,
-                mediaType: "audio",
-                senderId: currentUser.value?._id,
-                receiverId: otherUser._id,
-                chatId,
-                createdAt: new Date(),
-              },
-            });
+  // Register listener BEFORE stop so the event is never missed
+  rec.addEventListener("stop", async () => {
+    isRecording.value = false;
+    currentStream?.getTracks().forEach((t) => t.stop());
 
-            await $fetch(`/api/chat/${chatId}`, {
-              method: "patch",
-              body: { lastMessage: "Audio message" },
-            });
-          }
+    if (!chunks.length) return;
+    const audioBlob = new Blob(chunks, { type: rec.mimeType || "audio/webm" });
+    const arrayBuffer = await audioBlob.arrayBuffer();
+
+    socket.emit(
+      "upload",
+      arrayBuffer,
+      {
+        type: "audio",
+        mimeType: audioBlob.type,
+        senderId: currentUser.value?._id,
+        receiverId: otherUser.userId._id,
+        chatId,
+      },
+      async (res: any) => {
+        if (res.success) {
+          await $fetch("/api/message", {
+            method: "post",
+            body: {
+              mediaUrl: res.url,
+              mediaType: "audio",
+              senderId: currentUser.value?._id,
+              receiverId: otherUser.userId._id,
+              chatId,
+              createdAt: new Date(),
+            },
+          });
+
+          await $fetch(`/api/chat/${chatId}`, {
+            method: "patch",
+            body: { lastMessage: "Audio message" },
+          });
         }
-      );
-    });
+      }
+    );
+  });
+
+  try {
+    rec.stop();
   } catch {
     isRecording.value = false;
-  } finally {
-    recorder = null;
+    currentStream?.getTracks().forEach((t) => t.stop());
   }
 };
 
@@ -211,7 +287,7 @@ const sendImage = async (e: Event) => {
             mediaUrl: res.url,
             mediaType: "image",
             senderId: currentUser.value?._id,
-            receiverId: otherUser._id,
+            receiverId: otherUser.userId._id,
             chatId,
             createdAt: new Date(),
           },
@@ -252,7 +328,7 @@ const sendImage = async (e: Event) => {
       </div>
     </header>
     <!-- Body -->
-    <section class="chat-body" aria-live="polite">
+    <section ref="chatBody" class="chat-body" aria-live="polite" @scroll.passive="onChatScroll">
       <div
         v-for="(msg, index) in state.messages"
         :key="msg._id || index"
@@ -266,11 +342,18 @@ const sendImage = async (e: Event) => {
           }"
         >
           <template v-if="msg.mediaType === 'image'">
-            <img :src="msg.mediaUrl" class="chat-image" alt="Imagen enviada" />
+            <img
+              :src="msg.mediaUrl"
+              class="chat-image"
+              alt="Imagen enviada"
+              draggable="false"
+              @click="lightboxSrc = msg.mediaUrl"
+              @contextmenu.prevent
+            />
           </template>
 
           <template v-else-if="msg.mediaType === 'audio'">
-            <audio :src="msg.mediaUrl" controls preload="metadata"></audio>
+            <AudioPlayer :src="msg.mediaUrl" />
           </template>
 
           <template v-else>
@@ -281,7 +364,6 @@ const sendImage = async (e: Event) => {
         </div>
       </div>
 
-      <div ref="messagesEnd" style="height: 1px"></div>
     </section>
 
     <!-- Footer -->
@@ -327,17 +409,43 @@ const sendImage = async (e: Event) => {
         aria-label="Mantener para grabar"
         @pointerdown="captureAudio"
         @pointerup="sendAudio"
-        @pointerleave="isRecording && sendAudio()"
+        @pointercancel="cancelAudio"
+        @contextmenu.prevent
       >
-        <Icon
-          id="icon-audio"
-          size="26px"
-          name="solar:microphone-large-outline"
-        />
+        <span v-if="isRecording" class="rec-time">{{ fmtRecTime(recordingTime) }}</span>
+        <Icon v-else size="26px" name="solar:microphone-large-outline" />
         <span class="hold-tip">Mantén para grabar</span>
         <span class="pulse" aria-hidden="true"></span>
       </button>
     </footer>
+    <!-- Scroll to bottom -->
+    <Transition name="fade-up">
+      <button
+        v-if="showScrollBtn"
+        class="scroll-to-bottom"
+        aria-label="Ir al mensaje más reciente"
+        @click="scrollToBottom"
+      >
+        <Icon name="solar:alt-arrow-down-bold" size="20px" />
+      </button>
+    </Transition>
+
+    <!-- Lightbox -->
+    <Transition name="lb">
+      <div
+        v-if="lightboxSrc"
+        class="lightbox"
+        @click="lightboxSrc = null"
+      >
+        <img
+          :src="lightboxSrc"
+          class="lightbox-img"
+          alt="Imagen ampliada"
+          draggable="false"
+          @contextmenu.prevent
+        />
+      </div>
+    </Transition>
   </main>
 </template>
 
@@ -498,10 +606,12 @@ const sendImage = async (e: Event) => {
   display: block;
   border-radius: 12px;
   object-fit: cover;
+  cursor: zoom-in;
+  user-select: none;
+  -webkit-user-drag: none;
 }
-.bubble.audio audio {
-  width: min(70vw, 320px);
-  display: block;
+.bubble.audio {
+  padding: 6px 6px 18px;
 }
 
 /* Tiempo */
@@ -518,6 +628,8 @@ const sendImage = async (e: Event) => {
 .chat-footer {
   position: sticky;
   bottom: 0;
+  user-select: none;
+  -webkit-user-select: none;
   background: linear-gradient(
     180deg,
     rgba(0, 0, 0, 0),
@@ -580,6 +692,9 @@ const sendImage = async (e: Event) => {
   display: grid;
   place-items: center;
   cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 .mic-btn .hold-tip {
   position: absolute;
@@ -603,6 +718,14 @@ const sendImage = async (e: Event) => {
 .mic-btn.active {
   outline: 2px solid rgba(255, 82, 82, 0.45);
 }
+.rec-time {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #ff5252;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.5px;
+  line-height: 1;
+}
 .mic-btn .pulse {
   position: absolute;
   inset: 0;
@@ -620,6 +743,68 @@ const sendImage = async (e: Event) => {
     box-shadow: 0 0 0 14px rgba(255, 82, 82, 0);
     transform: scale(1.05);
   }
+}
+
+/* Scroll to bottom button */
+.scroll-to-bottom {
+  position: absolute;
+  bottom: calc(90px + env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: var(--surface-2);
+  color: var(--text);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.55);
+}
+.scroll-to-bottom:active {
+  transform: translateX(-50%) scale(0.9);
+}
+
+.fade-up-enter-active,
+.fade-up-leave-active {
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.fade-up-enter-from,
+.fade-up-leave-to {
+  opacity: 0;
+  transform: translateX(-50%) translateY(8px);
+}
+
+/* Lightbox */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: rgba(0, 0, 0, 0.92);
+  display: grid;
+  place-items: center;
+  cursor: zoom-out;
+}
+
+.lightbox-img {
+  max-width: 95vw;
+  max-height: 92vh;
+  object-fit: contain;
+  border-radius: 8px;
+  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+
+.lb-enter-active,
+.lb-leave-active {
+  transition: opacity 0.18s ease;
+}
+.lb-enter-from,
+.lb-leave-to {
+  opacity: 0;
 }
 
 /* Scrollbar */

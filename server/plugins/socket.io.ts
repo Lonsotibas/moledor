@@ -7,7 +7,7 @@ import { v4 as uuidv4 } from "uuid";
 
 const ALLOWED_MIME: Record<string, string[]> = {
   image: ["image/jpeg", "image/png", "image/gif", "image/webp"],
-  audio: ["audio/webm"],
+  audio: ["audio/webm", "audio/mp4", "audio/ogg", "audio/aac"],
 };
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
@@ -36,7 +36,8 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
       (fileBuffer: ArrayBuffer, meta: any, callback: Function) => {
         const { type, mimeType, senderId, receiverId, chatId } = meta;
 
-        if (!ALLOWED_MIME[type]?.includes(mimeType)) {
+        const baseMime = mimeType.split(";")[0].trim();
+        if (!ALLOWED_MIME[type]?.includes(baseMime)) {
           return callback({ success: false, error: "Tipo de archivo no permitido" });
         }
 
@@ -45,7 +46,7 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
           return callback({ success: false, error: "Archivo demasiado grande" });
         }
 
-        const extension = type === "image" ? mimeType.split("/")[1] : "webm";
+        const extension = baseMime.split("/")[1];
         const filename = `${uuidv4()}.${extension}`;
         const uploadPath = path.join(process.cwd(), "uploads", filename);
 
