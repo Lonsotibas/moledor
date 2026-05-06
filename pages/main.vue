@@ -33,7 +33,7 @@ function imageFor(user, idx: number) {
 }
 
 const isVisible = ref(false);
-const userSelected = ref("");
+const userSelected = ref<any>(null);
 const userSelectedImg = ref<string | null>(null);
 
 function openCard(user, idx: number) {
@@ -72,18 +72,20 @@ onBeforeMount(() => {
           loading="lazy"
           decoding="async"
         />
-        <span class="name">{{ user.nombre }}</span>
+        <div class="card-footer">
+          <span class="card-name">{{ user.nombre }}</span>
+          <span v-if="user.edad" class="card-age">{{ user.edad }}</span>
+        </div>
       </button>
     </div>
-    <Teleport to="body">
-      <UserModal
-        v-if="isVisible"
-        :isVisible="isVisible"
-        :user="userSelected"
-        :userImg="userSelectedImg"
-        @closed="closeModal"
-      />
-    </Teleport>
+
+    <UserModal
+      v-if="isVisible"
+      :isVisible="isVisible"
+      :user="userSelected"
+      :userImg="userSelectedImg"
+      @closed="closeModal"
+    />
   </main>
 </template>
 
@@ -122,19 +124,21 @@ onBeforeMount(() => {
   padding: 0;
   margin: 0;
   background: var(--black-soft);
-  border-radius: 6px;
+  border-radius: 8px;
   overflow: hidden;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  transition: transform 0.1s ease, opacity 0.1s ease;
+}
+
+.card:active {
+  transform: scale(0.96);
+  opacity: 0.88;
 }
 
 .card:focus-visible {
   outline: 2px solid var(--yellow);
   outline-offset: -2px;
-}
-
-.card:active {
-  opacity: 0.85;
 }
 
 .photo {
@@ -145,18 +149,34 @@ onBeforeMount(() => {
   object-fit: cover;
 }
 
-.name {
+.card-footer {
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-  padding: 20px 7px 6px;
+  padding: 22px 7px 6px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.78), transparent);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 3px;
+}
+
+.card-name {
   font-size: 0.78rem;
   font-weight: 700;
   color: #fff;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.72), transparent);
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.card-age {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.72);
+  flex-shrink: 0;
 }
 </style>
