@@ -177,9 +177,8 @@ function onKeydownMenu(e: KeyboardEvent) {
   top: 0;
   height: calc(var(--header-h) + env(safe-area-inset-top));
   padding-top: env(safe-area-inset-top);
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.86), rgba(0, 0, 0, 0.6));
-  backdrop-filter: blur(10px) saturate(115%);
-  border-bottom: 1px solid var(--divider);
+  background: var(--black);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   display: grid;
   grid-template-columns: 56px 1fr 56px;
   align-items: center;

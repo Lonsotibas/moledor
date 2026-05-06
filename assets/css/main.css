@@ -12,11 +12,6 @@ body {
   background-color: var(--black);
 }
 
-.view {
-  height: 90vh;
-  overflow-y: scroll;
-}
-
 a,
 a:hover,
 a:active,
@@ -27,12 +22,3 @@ a:focus {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Footer */
-footer {
-  width: 100%;
-  height: 10vh;
-  position: fixed;
-  left: 0;
-  bottom: 0;
-  background-color: var(--black);
-}
