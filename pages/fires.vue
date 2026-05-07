@@ -3,6 +3,7 @@ import { socket } from "~/components/socket.ts";
 
 const emit = defineEmits<{ (e: "showMenu", value: boolean): void }>();
 const { currentUser, setUserData } = useUserData();
+const { isSpectator } = useSpectator();
 const router = useRouter();
 
 type FireUser = { _id: string; nombre?: string; photos?: string[]; isMutual?: boolean };
@@ -231,7 +232,7 @@ onUnmounted(() => {
               <span v-else class="spinner"></span>
             </button>
             <button
-              v-if="tab === 'received'"
+              v-if="tab === 'received' && !isSpectator"
               class="fire-toggle"
               :class="{ fired: user.isMutual, pending: firingId === user._id }"
               :disabled="firingId === user._id"
@@ -243,7 +244,7 @@ onUnmounted(() => {
               />
             </button>
             <button
-              v-if="tab === 'sent'"
+              v-if="tab === 'sent' && !isSpectator"
               class="fire-toggle fired"
               :class="{ unfiring: unfiringId === user._id }"
               :disabled="unfiringId === user._id"

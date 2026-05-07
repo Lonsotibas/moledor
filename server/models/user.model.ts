@@ -30,6 +30,7 @@ const UserSchema = new Schema({
   blocked: [{ userId: { type: Schema.Types.ObjectId, ref: "User" } }],
   fires: [{ userId: { type: Schema.Types.ObjectId, ref: "User" } }],
   isSim: { type: Boolean, default: false },
+  isSpectator: { type: Boolean, default: false },
   simType: { type: String, default: null },
   simPersonality: { type: String, default: null },
 });

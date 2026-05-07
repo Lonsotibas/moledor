@@ -12,6 +12,7 @@ const emit = defineEmits<{
 }>();
 
 const { currentUser, setUserData } = useUserData();
+const { isSpectator } = useSpectator();
 
 const chatId = ref<string>("");
 const pending = ref(false);
@@ -133,6 +134,7 @@ async function openOrCreateChat() {
             <!-- Top bar -->
             <div class="top-bar">
               <button
+                v-if="!isSpectator"
                 class="icon-btn fire-toggle"
                 :class="{ fired: hasFired }"
                 type="button"
@@ -146,7 +148,7 @@ async function openOrCreateChat() {
                 />
               </button>
               <div class="top-actions">
-                <button class="icon-btn" type="button" aria-label="Bloquear">
+                <button v-if="!isSpectator" class="icon-btn" type="button" aria-label="Bloquear">
                   <Icon size="20px" name="ri:prohibited-2-line" />
                 </button>
                 <button
@@ -190,6 +192,7 @@ async function openOrCreateChat() {
               </div>
 
               <button
+                v-if="!isSpectator"
                 class="chat-fab"
                 type="button"
                 :aria-busy="pending"

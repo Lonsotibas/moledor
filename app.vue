@@ -2,6 +2,7 @@
 import { socket } from "~/components/socket.ts";
 
 const { currentUser, setUserData } = useUserData();
+const { isSpectator } = useSpectator();
 const showMenu = ref(false);
 const route = useRoute();
 const { increment, nameFor, photoFor } = useUnread();
@@ -14,7 +15,10 @@ onBeforeMount(() => {
   }
 });
 
-const joinRoom = () => socket.emit("join", currentUser.value?._id);
+const joinRoom = () => {
+  socket.emit("join", currentUser.value?._id);
+  if (isSpectator.value) socket.emit("join", "spectators");
+};
 
 const onGlobalMessage = (msg: any) => {
   if (!msg || msg.senderId === currentUser.value?._id) return;

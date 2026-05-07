@@ -2,6 +2,7 @@
 import { socket } from "~/components/socket.ts";
 
 const { currentUser } = useUserData();
+const { isSpectator } = useSpectator();
 const emit = defineEmits(["showMenu"]);
 const { counts, init: initUnread } = useUnread();
 
@@ -45,13 +46,16 @@ const formatTime = (d?: string | Date) => {
 };
 
 const otherOf = (chat: Chat) => {
+  if (isSpectator.value) {
+    return (chat.users?.find((u: any) => u?.userId?.isSim) ?? chat.users?.[0])?.userId;
+  }
   const me = currentUser.value?._id;
   return chat.users?.find((u) => u?.userId?._id !== me)?.userId;
 };
 
 const sortByRecent = (a: Chat, b: Chat) => {
-  const da = new Date(a.updatedAt || a.createdAt || 0).getTime();
-  const db = new Date(b.updatedAt || b.createdAt || 0).getTime();
+  const da = new Date((a as any).lastModified || a.updatedAt || a.createdAt || 0).getTime();
+  const db = new Date((b as any).lastModified || b.updatedAt || b.createdAt || 0).getTime();
   return db - da;
 };
 
@@ -78,9 +82,13 @@ const filtered = computed(() => {
 async function loadChats() {
   try {
     state.loading = true;
-    const chatIds = ((currentUser.value as any)?.chats || [])
-      .map((c: any) => c.chatId)
-      .filter(Boolean);
+    if (isSpectator.value) {
+      const fetched = await $fetch<Chat[]>("/api/sim/chats");
+      state.chats = fetched.filter((c) => c && c._id && Array.isArray(c.users));
+      return;
+    }
+    const freshUser = await $fetch<any>(`/api/user/${currentUser.value?._id}`);
+    const chatIds = (freshUser?.chats || []).map((c: any) => c.chatId).filter(Boolean);
     if (!chatIds.length) { state.chats = []; return; }
     const fetched = await $fetch<Chat[]>("/api/chats", { method: "post", body: { chatIds, userId: currentUser.value?._id } });
     state.chats = fetched.filter((c) => c && c._id && Array.isArray(c.users));
@@ -95,24 +103,22 @@ onBeforeMount(async () => {
   emit("showMenu", true);
 });
 
-const onSocketMessage = (msg: any) => {
+const onSocketMessage = async (msg: any) => {
   const chat = state.chats.find((c) => c._id === msg.chatId);
-  if (!chat) return;
-  chat.lastMessage =
-    msg.mediaType === "image" ? "Imagen 📷"
-    : msg.mediaType === "audio" ? "Audio 🎵"
-    : msg.message ?? "";
-  (chat as any).updatedAt = new Date().toISOString();
+  if (chat) {
+    chat.lastMessage =
+      msg.mediaType === "image" ? "Imagen 📷"
+      : msg.mediaType === "audio" ? "Audio 🎵"
+      : msg.message ?? "";
+    (chat as any).lastModified = new Date().toISOString();
+  } else {
+    // New chat not yet in local list — reload from DB
+    await loadChats();
+  }
 };
 
 onMounted(() => socket.on("message", onSocketMessage));
 onUnmounted(() => socket.off("message", onSocketMessage));
-
-watch(
-  () => currentUser.value?.chats,
-  async (nv, ov) => { if (nv !== ov) await loadChats(); },
-  { deep: true }
-);
 </script>
 
 <template>
@@ -120,7 +126,9 @@ watch(
     <!-- Top bar -->
     <header class="topbar">
       <Transition name="slide-title">
-        <h1 v-if="!state.searching" class="page-title">Mensajes</h1>
+        <div v-if="!state.searching" class="title-row">
+          <h1 class="page-title">Mensajes</h1>
+        </div>
       </Transition>
       <Transition name="slide-search">
         <div v-if="state.searching" class="search-wrap">
@@ -160,7 +168,7 @@ watch(
         <Icon name="solar:chat-square-like-bold-duotone" size="32px" />
       </div>
       <p class="empty-title">{{ state.q ? "Sin resultados" : "Sin mensajes aún" }}</p>
-      <p class="empty-sub">{{ state.q ? "Prueba con otro nombre." : "Inicia una conversación desde Explorar." }}</p>
+      <p class="empty-sub">{{ state.q ? "Prueba con otro nombre." : isSpectator ? "Los sims aún no han iniciado conversaciones." : "Inicia una conversación desde Explorar." }}</p>
     </section>
 
     <!-- List -->
@@ -523,5 +531,13 @@ watch(
 }
 @keyframes shimmer {
   100% { transform: translateX(100%); }
+}
+
+.title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: absolute;
+  left: 16px;
 }
 </style>

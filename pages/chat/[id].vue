@@ -48,9 +48,10 @@ function stopTimer() {
 const chatId = route.params.id as string;
 const chat = await $fetch(`/api/chat/${chatId}`);
 const { currentUser, setUserData } = useUserData();
-const otherUser = chat.users?.find(
-  (value: any) => value.userId._id !== currentUser.value?._id
-);
+const { isSpectator } = useSpectator();
+const otherUser = isSpectator.value
+  ? (chat.users?.find((u: any) => u?.userId?.isSim) ?? chat.users?.[0])
+  : chat.users?.find((value: any) => value.userId._id !== currentUser.value?._id);
 
 const chatBody = ref<HTMLElement | null>(null);
 const lightboxSrc = ref<string | null>(null);
@@ -81,12 +82,15 @@ onBeforeMount(async () => {
   state.messages = await $fetch(`/api/messages/${chatId}`);
   socket.connect();
   socket.emit("join", currentUser.value?._id);
+  if (isSpectator.value) socket.emit("join", "spectators");
 
-  clearUnread(chatId);
-  $fetch("/api/chat/read", {
-    method: "patch",
-    body: { chatId, userId: currentUser.value?._id },
-  }).catch(() => {});
+  if (!isSpectator.value) {
+    clearUnread(chatId);
+    $fetch("/api/chat/read", {
+      method: "patch",
+      body: { chatId, userId: currentUser.value?._id },
+    }).catch(() => {});
+  }
 });
 
 const onSocketConnect = () => {
@@ -94,8 +98,9 @@ const onSocketConnect = () => {
 };
 
 const onSocketMessage = (value: any) => {
+  if (value.chatId !== chatId) return;
   state.messages.push(value);
-  if (value.senderId !== currentUser.value?._id) sound.play();
+  if (value.senderId !== currentUser.value?._id && !isSpectator.value) sound.play();
   scrollToBottom();
 };
 
@@ -187,7 +192,10 @@ async function blockUser() {
 }
 
 // Helpers
-const isMine = (msg: any) => msg.senderId === currentUser.value?._id;
+const isMine = (msg: any) => {
+  if (isSpectator.value) return msg.senderId === otherUser?.userId?._id;
+  return msg.senderId === currentUser.value?._id;
+};
 
 const formatTime = (d: any) => {
   const date = d ? new Date(d) : new Date();
@@ -413,21 +421,23 @@ const sendImage = async (e: Event) => {
       </button>
 
       <div class="opts">
-        <button class="icon-btn" aria-label="Bloquear" @click="showBlockDialog = true">
-          <Icon size="24px" name="ri:prohibited-2-line" />
-        </button>
-        <button
-          class="icon-btn"
-          :class="{ fired: hasFired }"
-          :aria-label="hasFired ? 'Quitar fuego' : 'Dar fuego'"
-          :disabled="firingPending"
-          @click="toggleFire"
-        >
-          <Icon
-            size="24px"
-            :name="hasFired ? 'solar:fire-minimalistic-bold' : 'solar:fire-minimalistic-outline'"
-          />
-        </button>
+        <template v-if="!isSpectator">
+          <button class="icon-btn" aria-label="Bloquear" @click="showBlockDialog = true">
+            <Icon size="24px" name="ri:prohibited-2-line" />
+          </button>
+          <button
+            class="icon-btn"
+            :class="{ fired: hasFired }"
+            :aria-label="hasFired ? 'Quitar fuego' : 'Dar fuego'"
+            :disabled="firingPending"
+            @click="toggleFire"
+          >
+            <Icon
+              size="24px"
+              :name="hasFired ? 'solar:fire-minimalistic-bold' : 'solar:fire-minimalistic-outline'"
+            />
+          </button>
+        </template>
       </div>
     </header>
     <!-- Body -->
@@ -470,7 +480,7 @@ const sendImage = async (e: Event) => {
     </section>
 
     <!-- Footer -->
-    <footer class="chat-footer" :class="{ recording: isRecording }">
+    <footer v-if="!isSpectator" class="chat-footer" :class="{ recording: isRecording }">
       <div class="composer">
         <button
           class="icon-btn left"
@@ -913,6 +923,8 @@ const sendImage = async (e: Event) => {
     transform: scale(1.05);
   }
 }
+
+
 
 /* Fire */
 .icon-btn.fired {

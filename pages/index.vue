@@ -38,9 +38,9 @@ const loginUser = async (e: Event) => {
         }) as any;
         loginSuccess.value = true;
         setUserData(user);
-        emit("showMenu", !user.isSim);
+        emit("showMenu", true);
         await new Promise((r) => setTimeout(r, 700));
-        navigateTo(user.isSim ? "/spectator" : "/main");
+        navigateTo("/main");
     } catch {
         loginError.value = "Usuario o contraseña incorrectos";
     } finally {

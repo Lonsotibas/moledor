@@ -19,6 +19,9 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
 
   io.bind(engine);
 
+  // Expose io for use in API routes (e.g. sim/emit)
+  (nitroApp as any)._io = io;
+
   io.on("connection", (socket) => {
     console.log("Chat conectado");
 
@@ -82,17 +85,14 @@ export default defineNitroPlugin((nitroApp: NitroApp) => {
       },
       websocket: {
         open(peer) {
-          const nodeContext = peer.ctx.node;
-          const req = nodeContext.req;
+          const nodeContext = peer.ctx?.node;
+          if (!nodeContext?.req || !nodeContext?.ws) return;
 
           // @ts-expect-error private method
-          engine.prepare(req);
-
-          const rawSocket = nodeContext.req.socket;
-          const websocket = nodeContext.ws;
+          engine.prepare(nodeContext.req);
 
           // @ts-expect-error private method
-          engine.onWebSocket(req, rawSocket, websocket);
+          engine.onWebSocket(nodeContext.req, nodeContext.req.socket, nodeContext.ws);
         },
       },
     })
