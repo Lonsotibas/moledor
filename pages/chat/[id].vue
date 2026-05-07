@@ -227,9 +227,19 @@ const captureAudio = async (e: PointerEvent) => {
   (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
   try {
     chunks = [];
-    stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    stream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        channelCount: 1,
+        sampleRate: { ideal: 16000 },
+        echoCancellation: true,
+        noiseSuppression: true,
+      },
+    });
     const mimeType = getAudioMimeType();
-    recorder = new MediaRecorder(stream, mimeType ? { mimeType } : {});
+    recorder = new MediaRecorder(stream, {
+      ...(mimeType ? { mimeType } : {}),
+      audioBitsPerSecond: 32000,
+    });
     recorder.ondataavailable = (ev) => { if (ev.data.size > 0) chunks.push(ev.data); };
     recorder.start(100); // collect a chunk every 100 ms
     isRecording.value = true;

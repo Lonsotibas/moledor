@@ -43,6 +43,9 @@ export default defineEventHandler(async (event) => {
         prep: str(body.prep),
       },
       tags: arr(body.tags),
+      photos: Array.isArray(body.photos) ? body.photos.filter(Boolean) : [],
+      simPersonality: str(body.simPersonality),
+      simType: str(body.simType),
     });
 
     user = await user.save();

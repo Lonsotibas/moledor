@@ -3,6 +3,7 @@ const { setUserData } = useUserData();
 const emit = defineEmits(["showMenu"]);
 const newUser = ref(false);
 const nameSend = ref(false);
+const profileSend = ref(false);
 
 const name = ref("");
 const pass = ref("");
@@ -21,23 +22,71 @@ const vih = ref("");
 const prep = ref("");
 const tags = ref<string[]>([]);
 
+const loginError = ref("");
+const loginSuccess = ref(false);
+const loginLoading = ref(false);
+
 const loginUser = async (e: Event) => {
     e.preventDefault();
+    loginError.value = "";
+    loginSuccess.value = false;
+    loginLoading.value = true;
     try {
         const user = await $fetch("/api/auth/login", {
             method: "post",
             body: { name: name.value, pass: pass.value },
-        });
-        setUserData(user as any);
-        emit("showMenu", true);
-        navigateTo("/main");
+        }) as any;
+        loginSuccess.value = true;
+        setUserData(user);
+        emit("showMenu", !user.isSim);
+        await new Promise((r) => setTimeout(r, 700));
+        navigateTo(user.isSim ? "/spectator" : "/main");
     } catch {
-        // Credenciales inválidas
+        loginError.value = "Usuario o contraseña incorrectos";
+    } finally {
+        loginLoading.value = false;
+    }
+};
+
+// Step 3 — personality & photo generation
+const simDescription = ref("");
+const generatedPhoto = ref("");
+const simType = ref("");
+const photoLoading = ref(false);
+const photoError = ref("");
+const createLoading = ref(false);
+
+const generatePhoto = async () => {
+    if (!simDescription.value.trim()) {
+        photoError.value = "Escribe una descripción primero.";
+        return;
+    }
+    photoError.value = "";
+    photoLoading.value = true;
+    try {
+        const res = await $fetch("/api/sim/generate-photo", {
+            method: "post",
+            body: {
+                description: simDescription.value,
+                attributes: {
+                    edad: age.value,
+                    genero: gender.value,
+                    etnia: ethnicity.value,
+                },
+            },
+        }) as any;
+        generatedPhoto.value = res.url;
+        simType.value = res.simType;
+    } catch {
+        photoError.value = "Error generando la foto. ¿Está corriendo el sim engine?";
+    } finally {
+        photoLoading.value = false;
     }
 };
 
 const createUser = async (e: Event) => {
     e.preventDefault();
+    createLoading.value = true;
     try {
         const res = await $fetch("/api/user", {
             method: "post",
@@ -58,6 +107,9 @@ const createUser = async (e: Event) => {
                 vih: vih.value,
                 prep: prep.value,
                 tags: tags.value,
+                photos: generatedPhoto.value ? [generatedPhoto.value] : [],
+                simPersonality: simDescription.value,
+                simType: simType.value,
             },
         });
         setUserData(res as any);
@@ -65,6 +117,8 @@ const createUser = async (e: Event) => {
         navigateTo("/main");
     } catch {
         // Error al crear usuario
+    } finally {
+        createLoading.value = false;
     }
 };
 
@@ -94,8 +148,12 @@ onBeforeMount(() => {
                     <input v-model="pass" type="password" id="login-pass" name="login-pass"
                         autocomplete="current-password" placeholder="••••••••" />
                 </fieldset>
-                <button type="submit" class="btn-primary">Iniciar sesión</button>
-                <button type="button" class="btn-ghost" @click="newUser = true">
+                <p v-if="loginError" class="form-msg form-msg--error">{{ loginError }}</p>
+                <p v-if="loginSuccess" class="form-msg form-msg--success">¡Sesión iniciada!</p>
+                <button type="submit" class="btn-primary" :disabled="loginLoading">
+                    {{ loginSuccess ? '¡Bienvenido!' : loginLoading ? 'Entrando…' : 'Iniciar sesión' }}
+                </button>
+                <button type="button" class="btn-ghost" :disabled="loginLoading" @click="newUser = true">
                     Crear cuenta
                 </button>
             </form>
@@ -114,19 +172,19 @@ onBeforeMount(() => {
                 <fieldset class="field">
                     <label for="reg-name">Nombre de usuario</label>
                     <input v-model="name" type="text" id="reg-name" name="name" autocomplete="username"
-                        placeholder="Tu nombre único" />
+                        placeholder="Tu nombre único" required />
                 </fieldset>
                 <fieldset class="field">
                     <label for="reg-pass">Contraseña</label>
                     <input v-model="pass" type="password" id="reg-pass" name="pass" autocomplete="new-password"
-                        placeholder="••••••••" />
+                        placeholder="••••••••" required />
                 </fieldset>
                 <button type="submit" class="btn-primary">Continuar</button>
             </form>
         </div>
 
         <!-- ── REGISTER STEP 2 ────────────────────────────── -->
-        <div v-else class="screen screen--profile">
+        <div v-else-if="!profileSend" class="screen screen--profile">
             <header class="profile-header">
                 <button class="back-btn" type="button" @click="nameSend = false">
                     <Icon name="ion:caret-back" size="14px" /> Volver
@@ -135,7 +193,7 @@ onBeforeMount(() => {
                 <p class="brand-sub">Cuéntanos sobre ti (opcional)</p>
             </header>
 
-            <form class="profile-grid" @submit.prevent="createUser">
+            <form class="profile-grid" @submit.prevent="profileSend = true">
                 <fieldset class="field">
                     <label for="gender">Género</label>
                     <input v-model="gender" type="text" id="gender" placeholder="Ej: Hombre" />
@@ -198,9 +256,58 @@ onBeforeMount(() => {
                 </fieldset>
 
                 <div class="submit-row">
-                    <button type="submit" class="btn-primary">Crear perfil</button>
+                    <button type="submit" class="btn-primary">Continuar</button>
                 </div>
             </form>
+        </div>
+
+        <!-- ── REGISTER STEP 3 ────────────────────────────── -->
+        <div v-else class="screen">
+            <button class="back-btn" type="button" @click="profileSend = false">
+                <Icon name="ion:caret-back" size="14px" /> Volver
+            </button>
+            <div class="brand">
+                <h1 class="brand-name">Tu foto</h1>
+                <p class="brand-sub">Descríbete para generar tu imagen de perfil</p>
+            </div>
+
+            <div class="card">
+                <fieldset class="field">
+                    <label for="sim-desc">Descripción</label>
+                    <textarea
+                        v-model="simDescription"
+                        id="sim-desc"
+                        class="field-textarea"
+                        rows="4"
+                        placeholder="Ej: Hombre moreno de ojos café, barba corta, aspecto casual y relajado…"
+                    />
+                </fieldset>
+
+                <p v-if="photoError" class="form-msg form-msg--error">{{ photoError }}</p>
+
+                <button
+                    type="button"
+                    class="btn-ghost"
+                    :disabled="photoLoading"
+                    @click="generatePhoto"
+                >
+                    {{ photoLoading ? 'Generando…' : 'Generar foto' }}
+                </button>
+
+                <div v-if="generatedPhoto" class="photo-preview">
+                    <img :src="generatedPhoto" alt="Foto generada" class="preview-img" />
+                    <p class="preview-hint">¿No te convence? Edita la descripción y genera de nuevo.</p>
+                </div>
+
+                <button
+                    type="button"
+                    class="btn-primary"
+                    :disabled="createLoading || photoLoading"
+                    @click="createUser"
+                >
+                    {{ createLoading ? 'Creando cuenta…' : 'Crear cuenta' }}
+                </button>
+            </div>
         </div>
 
     </main>
@@ -312,6 +419,28 @@ onBeforeMount(() => {
     opacity: 0.6;
 }
 
+/* ── Form messages ────────────────────────────────────── */
+.form-msg {
+    margin: 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-align: center;
+    padding: 10px 14px;
+    border-radius: 10px;
+}
+
+.form-msg--error {
+    background: rgba(255, 107, 107, 0.12);
+    color: #ff6b6b;
+    border: 1px solid rgba(255, 107, 107, 0.25);
+}
+
+.form-msg--success {
+    background: rgba(66, 209, 125, 0.12);
+    color: #42d17d;
+    border: 1px solid rgba(66, 209, 125, 0.25);
+}
+
 /* ── Buttons ──────────────────────────────────────────── */
 .btn-primary {
     width: 100%;
@@ -406,5 +535,53 @@ onBeforeMount(() => {
 .submit-row {
     grid-column: 1 / 3;
     padding-top: 8px;
+}
+
+/* ── Step 3 ───────────────────────────────────────────── */
+.field-textarea {
+    background: var(--black-soft);
+    border: 1px solid rgba(255, 188, 66, 0.25);
+    border-radius: 12px;
+    color: var(--white-soft);
+    font-size: 15px;
+    padding: 12px 14px;
+    width: 100%;
+    outline: none;
+    resize: vertical;
+    font-family: inherit;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.field-textarea:focus {
+    border-color: var(--yellow);
+    box-shadow: 0 0 0 3px rgba(255, 188, 66, 0.12);
+}
+
+.field-textarea::placeholder {
+    color: var(--gray);
+    opacity: 0.6;
+}
+
+.photo-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.preview-img {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--yellow);
+    box-shadow: 0 0 18px rgba(255, 188, 66, 0.3);
+}
+
+.preview-hint {
+    font-size: 0.78rem;
+    color: var(--gray);
+    text-align: center;
+    margin: 0;
 }
 </style>

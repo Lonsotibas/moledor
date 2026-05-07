@@ -51,7 +51,13 @@ onUnmounted(() => {
   window.removeEventListener("pointerdown", onClickOutside);
 });
 
-const logout = () => {
+const logout = async () => {
+  if (currentUser.value?._id) {
+    await $fetch("/api/user/logout", {
+      method: "patch",
+      body: { userId: currentUser.value._id },
+    }).catch(() => {});
+  }
   setUserData(null);
   closeMenu();
   navigateTo("/");
