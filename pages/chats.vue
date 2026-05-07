@@ -180,9 +180,7 @@ watch(
               class="avatar-img"
               loading="lazy"
             />
-            <span v-else class="avatar-initial">
-              {{ (otherOf(chat)?.nombre || "?")[0].toUpperCase() }}
-            </span>
+            <Icon v-else name="solar:user-circle-bold" size="32px" class="avatar-icon" />
             <span class="online-dot" aria-hidden="true"></span>
           </div>
 
@@ -350,17 +348,13 @@ watch(
   overflow: visible;
 }
 .avatar-img {
-  width: 100%;
-  height: 100%;
+  width: 54px;
+  height: 54px;
   object-fit: cover;
   border-radius: 50%;
 }
-.avatar-initial {
-  font-size: 1.2rem;
-  font-weight: 800;
+.avatar-icon {
   color: var(--yellow, #ffbc42);
-  line-height: 1;
-  user-select: none;
 }
 .online-dot {
   position: absolute;

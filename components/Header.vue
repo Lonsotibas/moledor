@@ -250,9 +250,10 @@ function onKeydownMenu(e: KeyboardEvent) {
   transform: translateY(1px);
 }
 .avatar-photo {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-  border-radius: 50%;
   object-fit: cover;
 }
 .status-dot {
@@ -347,8 +348,8 @@ function onKeydownMenu(e: KeyboardEvent) {
   border: 1px solid var(--divider);
 }
 .uc-photo {
-  width: 100%;
-  height: 100%;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   object-fit: cover;
 }
